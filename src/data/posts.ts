@@ -59,7 +59,7 @@ export function usePost(uri: AtUri | undefined): {
 
   const query = useQuery({
     queryKey: uri ? keys.post(scope, uri) : ['post', 'disabled'],
-    enabled: Boolean(uri),
+    enabled: Boolean(uri && (activeDid ? clients.activeAppViewProxyAgent : true)),
     staleTime: Number.POSITIVE_INFINITY,
     queryFn: async () => {
       const post = await fetchPost(uri!, clients, activeDid);
@@ -87,7 +87,7 @@ export function usePostRoute(uri: AtUri | undefined): {
 
   const query = useQuery({
     queryKey: uri ? keys.post(scope, uri) : ['post', 'disabled'],
-    enabled: Boolean(uri),
+    enabled: Boolean(uri && (activeDid ? clients.activeAppViewProxyAgent : true)),
     staleTime: DIRECT_ROUTE_STALE_TIME,
     refetchOnMount: 'always',
     queryFn: async () => {
@@ -119,7 +119,7 @@ export function useThread(
 
   const query = useQuery({
     queryKey: uri ? keys.thread(scope, uri) : ['thread', 'disabled'],
-    enabled: Boolean(uri),
+    enabled: Boolean(uri && (activeDid ? clients.activeAppViewProxyAgent : true)),
     staleTime: DIRECT_ROUTE_STALE_TIME,
     refetchOnMount: 'always',
     queryFn: async () => {

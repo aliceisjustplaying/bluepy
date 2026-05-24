@@ -31,10 +31,12 @@ export interface ClientBundle {
   bskyAppViewProxyAgent: Agent | null;
   publicActiveAppViewAgent: Agent;
   publicBskyAppViewAgent: Agent;
+  activeAppViewService: string;
 }
 
 export interface CreateClientsOptions {
   session: OAuthSession | null;
+  appPasswordAgent?: Agent | null;
   activeAppViewService: string;
   activeAppViewDid: string;
   acceptedLabelerDids: readonly string[];
@@ -61,9 +63,10 @@ function withProxyAgent(
 }
 
 export function createClients(opts: CreateClientsOptions): ClientBundle {
-  const pdsRepoAgent = opts.session
-    ? createAtprotoOAuthAgent(opts.session)
-    : null;
+  const pdsRepoAgent =
+    (opts.session ? createAtprotoOAuthAgent(opts.session) : null) ??
+    opts.appPasswordAgent ??
+    null;
 
   const publicActiveAppViewAgent = createPublicAgent(
     opts.activeAppViewService,
@@ -81,6 +84,7 @@ export function createClients(opts: CreateClientsOptions): ClientBundle {
       bskyAppViewProxyAgent: null,
       publicActiveAppViewAgent,
       publicBskyAppViewAgent,
+      activeAppViewService: opts.activeAppViewService,
     };
   }
 
@@ -98,6 +102,7 @@ export function createClients(opts: CreateClientsOptions): ClientBundle {
     ),
     publicActiveAppViewAgent,
     publicBskyAppViewAgent,
+    activeAppViewService: opts.activeAppViewService,
   };
 }
 

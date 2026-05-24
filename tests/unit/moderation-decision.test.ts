@@ -109,6 +109,35 @@ describe('decidePostModeration', () => {
     expect(decision.mediaNoOverride).toBe(true);
     expect(decision.noOverride).toBeUndefined();
   });
+
+  test.each([
+    {
+      type: 'app.bsky.embed.record#viewNotFound',
+      uri: 'at://did:plc:missing/app.bsky.feed.post/missing',
+      notFound: true,
+    },
+    {
+      type: 'app.bsky.embed.record#viewDetached',
+      uri: 'at://did:plc:detached/app.bsky.feed.post/detached',
+      detached: true,
+    },
+  ])('unavailable quoted record does not hide the parent post', (record) => {
+    const post = {
+      ...loadPost('label.json'),
+      labels: [],
+      embed: {
+        $type: 'app.bsky.embed.record#view',
+        record: {
+          $type: record.type,
+          uri: record.uri,
+          notFound: 'notFound' in record ? record.notFound : undefined,
+          detached: 'detached' in record ? record.detached : undefined,
+        },
+      },
+    } satisfies AppBskyFeedDefs.PostView;
+    const decision = decidePostModeration(post, baseContext());
+    expect(decision.visibility).toBe('show');
+  });
 });
 
 describe('decideProfileModeration', () => {

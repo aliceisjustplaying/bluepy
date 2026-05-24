@@ -6,6 +6,7 @@ import {
 } from '@atproto/api';
 import type { QueryClient } from '@tanstack/react-query';
 
+import { applyBookmarkOverride } from '../../utils/bookmark-overrides';
 import { keys, type ViewerScope } from '../keys';
 
 const VIEW_REF_TYPE = 'app.bsky.embed.record#viewRef';
@@ -91,7 +92,10 @@ function primeOnePost(
   scope: ViewerScope,
   post: AppBskyFeedDefs.PostView | AppBskyEmbedRecord.ViewRecord,
 ): AppBskyFeedDefs.PostView {
-  const normalized = post as AppBskyFeedDefs.PostView;
+  const normalized = applyBookmarkOverride(
+    post as AppBskyFeedDefs.PostView,
+    scope[0] === 'public' ? null : scope[0],
+  );
   let shaped: AppBskyFeedDefs.PostView = normalized;
 
   if (normalized.embed) {

@@ -5,8 +5,8 @@ import { autoAnimate } from '@formkit/auto-animate';
 import type { I18n, MessageDescriptor } from '@lingui/core';
 import { msg, select } from '@lingui/core/macro';
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
+import { useQueryClient } from '@tanstack/react-query';
 import { getBlurHashAverageColor } from 'fast-blurhash';
-import type { mastodon } from 'masto';
 import { Fragment, type JSX } from 'react';
 import { memo } from 'react';
 import {
@@ -21,6 +21,7 @@ import {
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useSearchParams } from 'react-router-dom';
 import { uid } from 'uid/single';
+import { useSnapshot } from 'valtio';
 
 import catchupUrl from '../assets/features/catch-up.png';
 
@@ -29,17 +30,26 @@ import Icon from '../components/icon';
 import Link from '../components/link';
 import Loader from '../components/loader';
 import Modal from '../components/modal';
-import NameText, { type NameTextAccount } from '../components/name-text';
+import ModerationGate from '../components/moderation-gate';
+import { type NameTextAccount } from '../components/name-text';
 import NavMenu from '../components/nav-menu';
 import RawHtml from '../components/raw-html';
 import RelativeTime from '../components/relative-time';
-import { api, getMastoV1Resource, getPreferences } from '../utils/api';
-import { catchupPageHasItemsInRange } from '../utils/catchup-fetch';
+import { useActiveDid, useClients } from '../contexts/SessionProvider';
+import { feedReadMode } from '../data/_internal/dispatch';
+import {
+  scanTimelineForCatchup,
+  type CatchupMediaAttachment,
+  type CatchupPostSummary,
+} from '../data/catchup';
+import { getReadAgent } from '../data/clients';
+import { useModerationContext, usePostModeration } from '../data/moderation';
+import { usePost } from '../data/posts';
+import { useViewerScope } from '../data/scope';
 import { compareCreatedAt } from '../utils/catchup-sort';
 import { oklab2rgb, rgb2oklab } from '../utils/color-utils';
 import db from '../utils/db';
 import emojifyText from '../utils/emojify-text';
-import { isFiltered } from '../utils/filters';
 import getDomain from '../utils/get-domain';
 import htmlContentLength from '../utils/html-content-length';
 import mem from '../utils/mem';
@@ -47,16 +57,12 @@ import niceDateTime from '../utils/nice-date-time';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import { sorted } from '../utils/sorted';
+import states from '../utils/states';
 import statusPeek from '../utils/status-peek';
-import store from '../utils/store';
-import { getCurrentAccountID, getCurrentAccountNS } from '../utils/store-utils';
 import useTitle from '../utils/useTitle';
 
 // Types -----------------------------------------------------------------
 
-// Mastodon's status type is augmented at runtime with bookkeeping flags the
-// catch-up pipeline attaches. Keep the surface open via index signatures so
-// downstream callers can still access the original Status fields.
 type FilterInfo =
   | {
       action?: string;
@@ -77,20 +83,18 @@ interface CatchupBooster {
   [key: string]: unknown;
 }
 
-type CatchupAccount = mastodon.v1.Account & NameTextAccount & CatchupBooster;
-type QuoteAccount = CatchupAccount | mastodon.v1.Status['account'];
-type QuoteStatusLike =
-  | mastodon.v1.Status
-  | {
-      id?: string | null;
-      account?: QuoteAccount;
-      spoilerText?: string;
-      sensitive?: boolean;
-      emojis?: mastodon.v1.Status['emojis'];
-      mediaAttachments?: mastodon.v1.Status['mediaAttachments'];
-      content?: string;
-      [key: string]: unknown;
-    };
+type CatchupAccount = NameTextAccount & CatchupBooster;
+type QuoteAccount = CatchupAccount;
+type QuoteStatusLike = {
+  id?: string | null;
+  account?: QuoteAccount;
+  spoilerText?: string;
+  sensitive?: boolean;
+  emojis?: [];
+  mediaAttachments?: CatchupMediaAttachment[];
+  content?: string;
+  [key: string]: unknown;
+};
 
 interface QuoteLike {
   id?: string | null;
@@ -98,13 +102,13 @@ interface QuoteLike {
   account?: QuoteAccount;
   spoilerText?: string;
   sensitive?: boolean;
-  emojis?: mastodon.v1.Status['emojis'];
-  mediaAttachments?: mastodon.v1.Status['mediaAttachments'];
+  emojis?: [];
+  mediaAttachments?: CatchupMediaAttachment[];
   content?: string;
   [key: string]: unknown;
 }
 
-type CatchupPost = mastodon.v1.Status & {
+type CatchupPost = CatchupPostSummary & {
   account: CatchupAccount;
   reblog?: CatchupPost | null;
   _filtered?: FilterInfo;
@@ -113,7 +117,6 @@ type CatchupPost = mastodon.v1.Status & {
   __HIDDEN?: boolean;
   __BOOSTERS?: Set<CatchupBooster>;
   group?: unknown;
-  quotesCount?: number;
   [key: string]: unknown;
 };
 
@@ -179,20 +182,28 @@ interface FilterCounts {
   [key: string]: number;
 }
 
-interface HomeTimelineParams {
-  include_reblogs?: boolean;
-  [key: string]: unknown;
-}
-
-interface HomeIterable {
-  values(): AsyncIterator<mastodon.v1.Status[]>;
-  params?: HomeTimelineParams | string;
-}
-
 type UIState = 'start' | 'loading' | 'results';
 
-const FILTER_CONTEXT = 'home';
 const CATCHUP_NS = 'catchup';
+
+function getCatchupSessionState(id: string | null): CatchupSessionState | null {
+  if (!id) return null;
+  try {
+    return JSON.parse(
+      sessionStorage.getItem(`${CATCHUP_NS}-${id}`) || 'null',
+    ) as CatchupSessionState | null;
+  } catch {
+    return null;
+  }
+}
+
+function setCatchupSessionState(
+  id: string | null,
+  state: CatchupSessionState,
+): void {
+  if (!id) return;
+  sessionStorage.setItem(`${CATCHUP_NS}-${id}`, JSON.stringify(state));
+}
 
 interface RangeEntry {
   label: MessageDescriptor;
@@ -248,9 +259,7 @@ const DTF = mem(
     }),
 );
 
-function hasQuote(
-  quote: QuoteLike | mastodon.v1.Status['quote'] | null | undefined,
-): boolean {
+function hasQuote(quote: QuoteLike | null | undefined): boolean {
   if (!quote) return false;
   const quotedStatusId =
     'quotedStatus' in quote ? quote.quotedStatus?.id : undefined;
@@ -258,14 +267,12 @@ function hasQuote(
   return !!(quoteId || quotedStatusId);
 }
 
-function quoteLike(
-  quote: QuoteLike | mastodon.v1.Status['quote'] | null | undefined,
-): QuoteLike | null {
+function quoteLike(quote: QuoteLike | null | undefined): QuoteLike | null {
   if (!quote) return null;
   if ('quotedStatus' in quote && quote.quotedStatus) {
     return quote.quotedStatus as QuoteLike;
   }
-  return quote as QuoteLike;
+  return quote;
 }
 
 type StatusPeekInput = Parameters<typeof statusPeek>[0];
@@ -310,13 +317,44 @@ function nameTextAccount(
 }
 
 function quoteNameTextAccount(
-  quote: QuoteLike | mastodon.v1.Status['quote'] | null | undefined,
+  quote: QuoteLike | null | undefined,
 ): NameTextAccount | undefined {
   if (!quote) return undefined;
   const quotedStatusAccount =
     'quotedStatus' in quote ? quote.quotedStatus?.account : undefined;
   const quoteAccount = 'account' in quote ? quote.account : undefined;
   return nameTextAccount(quotedStatusAccount || quoteAccount);
+}
+
+function CatchupNameText({
+  account,
+  showAvatar,
+}: {
+  account: NameTextAccount | null | undefined;
+  showAvatar?: boolean;
+}) {
+  if (!account) return null;
+  const label = account.displayName || account.username || account.acct;
+  return (
+    <span
+      className="name-text"
+      title={
+        account.displayName
+          ? `${account.displayName} (@${account.acct})`
+          : `@${account.acct}`
+      }
+    >
+      {showAvatar && (
+        <>
+          <Avatar
+            url={account.avatarStatic || account.avatar}
+            squircle={account.bot}
+          />{' '}
+        </>
+      )}
+      <b dir="auto">{label}</b>
+    </span>
+  );
 }
 
 function canonicalCatchupPostId(post: CatchupPost): string {
@@ -354,20 +392,17 @@ function Catchup() {
   const dtf = DTF(i18n.locale);
 
   useTitle(`Catch-up`, '/catchup');
-  const { masto, instance } = api();
+  const clients = useClients();
+  const activeDid = useActiveDid();
+  const scope = useViewerScope();
+  const queryClient = useQueryClient();
+  const moderationContext = useModerationContext();
+  const instance = 'bsky.social';
   const [searchParams, setSearchParams] = useSearchParams();
   const id = searchParams.get('id');
   const [uiState, setUIState] = useState<UIState>('start');
   const [showTopLinks, setShowTopLinks] = useState(false);
-
-  const currentAccount = useMemo(() => {
-    return getCurrentAccountID();
-  }, []);
-  const isSelf = useCallback(
-    (accountID: string | null | undefined): boolean =>
-      accountID === currentAccount,
-    [currentAccount],
-  );
+  const canRunCatchup = Boolean(activeDid && clients.activeAppViewProxyAgent);
 
   const fetchHome = useCallback(
     async ({
@@ -375,83 +410,31 @@ function Catchup() {
     }: {
       maxCreatedAt: number | null;
     }): Promise<CatchupPost[]> => {
-      console.debug('fetchHome', maxCreatedAt);
-      const allResults: CatchupPost[] = [];
-      const timelines = getMastoV1Resource<{
-        home: {
-          list(options: { limit: number }): HomeIterable;
-        };
-      }>(masto, 'timelines');
-      const homeIterable = timelines.home.list({ limit: 40 });
-      const homeIterator = homeIterable.values();
-      mainloop: while (true) {
-        try {
-          const results = await homeIterator.next();
-          const { value } = results as { value: CatchupPost[] | undefined };
-          if (value?.length) {
-            for (let i = 0; i < value.length; i++) {
-              const item = value[i];
-              const createdAtTime = Date.parse(item.createdAt);
-              if (!maxCreatedAt || createdAtTime >= maxCreatedAt) {
-                // Filtered
-                const selfPost = isSelf(
-                  item.reblog?.account?.id || item.account.id,
-                );
-                const filterInfo =
-                  !selfPost &&
-                  isFiltered(
-                    item.reblog?.filtered || item.filtered,
-                    FILTER_CONTEXT,
-                  );
-                if (filterInfo && filterInfo.action === 'hide') continue;
-                item._filtered = filterInfo as FilterInfo;
-
-                allResults.push(item);
-              } else {
-                // Don't immediately stop, still add the other items that might still be within range
-                // break mainloop;
-              }
-            }
-            // Only stop when ALL items are outside of range. Hidden filtered
-            // posts still count as in-range so they don't truncate catch-up.
-            if (!catchupPageHasItemsInRange(value, maxCreatedAt)) {
-              break mainloop;
-            }
-          } else {
-            break mainloop;
-          }
-          // Pause 1s
-          await new Promise((resolve) => {
-            setTimeout(resolve, 1000);
-          });
-        } catch (e) {
-          console.error(e);
-          break mainloop;
-        }
+      if (!activeDid || !clients.activeAppViewProxyAgent) {
+        throw new Error('Login required to run Catch-up.');
       }
-
-      // Post-process all results
-      // 1. Threadify - tag 1st-post in a thread
-      allResults.forEach((status) => {
-        if (status?.inReplyToId) {
-          const replyToStatus = allResults.find(
-            (s) => s.id === status.inReplyToId,
-          );
-          if (replyToStatus && !replyToStatus.inReplyToId) {
-            replyToStatus._thread = true;
-          }
-        }
-      });
-
-      return allResults;
+      console.debug('fetchHome', maxCreatedAt);
+      const agent = getReadAgent(clients, feedReadMode(activeDid));
+      return scanTimelineForCatchup({
+        agent,
+        queryClient,
+        scope,
+        maxCreatedAt,
+        currentAccountDid: activeDid,
+        moderationContext,
+      }) as Promise<CatchupPost[]>;
     },
-    [masto, isSelf],
+    [activeDid, clients, queryClient, moderationContext, scope],
   );
 
   const [posts, setPosts] = useState<CatchupPost[]>([]);
   const catchupRangeRef = useRef<HTMLInputElement | null>(null);
   const catchupLastRef = useRef<HTMLInputElement | null>(null);
-  const NS = useMemo(() => getCurrentAccountNS(), []);
+  const NS = activeDid ?? 'public';
+  const catchupNamespaces = useMemo(
+    () => (activeDid ? [activeDid, `${activeDid}@${instance}`] : ['public']),
+    [activeDid, instance],
+  );
   const handleCatchupClick = useCallback(
     async ({ duration }: { duration?: number } = {}): Promise<void> => {
       const now = Date.now();
@@ -465,6 +448,17 @@ function Catchup() {
           : null,
       });
       setUIState('loading');
+      setSelectedFilterCategory('all');
+      setSelectedAuthor(null);
+      setSortBy('createdAt');
+      setSortOrder('asc');
+      setGroupBy(null);
+      setShowTopLinks(false);
+      if (!canRunCatchup) {
+        setUIState('start');
+        showToast(t`Login required to run Catch-up.`);
+        return;
+      }
       const results = await fetchHome({ maxCreatedAt });
       // Namespaced by account ID
       // Possible conflict if ID matches between different accounts from different instances
@@ -482,7 +476,7 @@ function Catchup() {
         console.error(e, results);
       }
     },
-    [dtf, fetchHome, NS, setSearchParams],
+    [canRunCatchup, dtf, fetchHome, NS, setSearchParams, t],
   );
 
   const syncRouteCatchup = useEffectEvent(() => {
@@ -518,19 +512,20 @@ function Catchup() {
       if (key?.startsWith(`${CATCHUP_NS}-`)) {
         const catchupId = key.replace(`${CATCHUP_NS}-`, '');
         if (!catchupIds.has(catchupId)) {
-          store.session.del(key);
+          sessionStorage.removeItem(key);
         }
       }
     }
-  }, [prevCatchups]);
+  }, [NS, prevCatchups]);
 
   useEffect(() => {
     void (async () => {
       try {
         const catchups = (await db.catchup.keys()) as string[];
         if (catchups.length) {
-          const ns = getCurrentAccountNS();
-          const ownKeys = catchups.filter((key) => key.startsWith(`${ns}-`));
+          const ownKeys = catchups.filter((key) =>
+            catchupNamespaces.some((ns) => key.startsWith(`${ns}-`)),
+          );
           if (ownKeys.length) {
             let ownCatchups: CatchupRecord[] | null = (await db.catchup.getMany(
               ownKeys,
@@ -581,7 +576,7 @@ function Catchup() {
       }
       setPrevCatchups([]);
     })();
-  }, [reloadCatchupsCount]);
+  }, [catchupNamespaces, reloadCatchupsCount]);
   useEffect(() => {
     if (uiState === 'start') {
       reloadCatchups();
@@ -709,9 +704,7 @@ function Catchup() {
 
   useEffect(() => {
     if (!id) return;
-    const savedState = store.session.getJSON<CatchupSessionState>(
-      `${CATCHUP_NS}-${id}`,
-    );
+    const savedState = getCatchupSessionState(id);
     if (savedState) {
       if (savedState.selectedFilterCategory !== undefined) {
         setSelectedFilterCategory(savedState.selectedFilterCategory);
@@ -744,7 +737,7 @@ function Catchup() {
       groupBy,
       showTopLinks,
     };
-    store.session.setJSON(`${CATCHUP_NS}-${id}`, state);
+    setCatchupSessionState(id, state);
   }, [
     id,
     uiState,
@@ -971,9 +964,7 @@ function Catchup() {
       return undefined;
     if (!sortedFilteredPosts.length) return undefined;
 
-    const savedState = store.session.getJSON<CatchupSessionState>(
-      `${CATCHUP_NS}-${id}`,
-    );
+    const savedState = getCatchupSessionState(id);
     if (savedState?.scrollTop !== undefined && savedState.scrollTop > 0) {
       const timeoutId = setTimeout(() => {
         if (scrollableRef.current) {
@@ -997,11 +988,9 @@ function Catchup() {
 
     const handleScroll = () => {
       if (!scrollableRef.current) return;
-      const savedState =
-        store.session.getJSON<CatchupSessionState>(`${CATCHUP_NS}-${id}`) ||
-        ({} as CatchupSessionState);
+      const savedState = getCatchupSessionState(id) || {};
       savedState.scrollTop = scrollableRef.current.scrollTop;
-      store.session.setJSON(`${CATCHUP_NS}-${id}`, savedState);
+      setCatchupSessionState(id, savedState);
     };
 
     const scrollElement = scrollableRef.current;
@@ -1315,24 +1304,6 @@ function Catchup() {
     },
   );
 
-  const handleArrowKeys = useCallback((e: React.KeyboardEvent) => {
-    const activeElement = document.activeElement as
-      | (HTMLElement & { type?: string })
-      | null;
-    const isRadio =
-      activeElement?.tagName === 'INPUT' && activeElement.type === 'radio';
-    const isArrowKeys =
-      e.key === 'ArrowDown' ||
-      e.key === 'ArrowUp' ||
-      e.key === 'ArrowLeft' ||
-      e.key === 'ArrowRight';
-    if (isArrowKeys && isRadio) {
-      // Note: page scroll won't trigger on first arrow key press due to this. Subsequent presses will.
-      activeElement?.blur();
-      return;
-    }
-  }, []);
-
   return (
     <div
       ref={(node) => {
@@ -1400,7 +1371,7 @@ function Catchup() {
             </div>
           </div>
         </header>
-        <main onKeyDown={handleArrowKeys}>
+        <main>
           {uiState === 'start' && (
             <div className="catchup-start">
               <h1>
@@ -1451,6 +1422,7 @@ function Catchup() {
               </p>
               <div className="catchup-form">
                 <input
+                  aria-label={t`Catch-up range`}
                   ref={catchupRangeRef}
                   type="range"
                   value={range}
@@ -1479,7 +1451,12 @@ function Catchup() {
                 </span>
                 <datalist id="catchup-ranges">
                   {RANGES.map(({ label, value }) => (
-                    <option key={value} value={value} label={_(label)} />
+                    <option
+                      aria-label={_(label)}
+                      key={value}
+                      value={value}
+                      label={_(label)}
+                    />
                   ))}
                 </datalist>{' '}
                 <button
@@ -1503,6 +1480,7 @@ function Catchup() {
                     }
                     void handleCatchupClick({ duration });
                   }}
+                  disabled={!canRunCatchup}
                 >
                   <Trans>Catch up</Trans>
                 </button>
@@ -1700,6 +1678,7 @@ function Catchup() {
 
                       return (
                         <a
+                          aria-label={title || url}
                           key={url}
                           href={url}
                           target="_blank"
@@ -1821,6 +1800,7 @@ function Catchup() {
                 <div className="catchup-filters">
                   <label className="filter-cat">
                     <input
+                      aria-label={t`All posts`}
                       type="radio"
                       name="filter-cat"
                       checked={selectedFilterCategory.toLowerCase() === 'all'}
@@ -1844,6 +1824,7 @@ function Catchup() {
                           }
                         >
                           <input
+                            aria-label={_(label)}
                             type="radio"
                             name="filter-cat"
                             checked={
@@ -1881,6 +1862,7 @@ function Catchup() {
                       // Legacy ordering note removed during React migration
                     >
                       <input
+                        aria-label={author}
                         type="radio"
                         name="filter-author"
                         checked={selectedAuthor === author}
@@ -1932,28 +1914,25 @@ function Catchup() {
                   </span>{' '}
                   <fieldset className="radio-field-group">
                     {FILTER_SORTS.map((key) => (
-                      <label
-                        className="filter-sort"
-                        key={key}
-                        onClick={(e) => {
-                          if (sortBy === key) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                          }
-                        }}
-                      >
+                      <label className="filter-sort" key={key}>
                         <input
+                          aria-label={key}
                           type="radio"
                           name="filter-sort-cat"
                           checked={sortBy === key}
                           onChange={() => {
-                            setSortBy(key);
-                            const order =
-                              /(replies|favourites|reblogs|quotes)/.test(key)
-                                ? 'desc'
-                                : 'asc';
-                            setSortOrder(order);
+                            if (sortBy === key) {
+                              setSortOrder(
+                                sortOrder === 'asc' ? 'desc' : 'asc',
+                              );
+                            } else {
+                              setSortBy(key);
+                              const order =
+                                /(replies|favourites|reblogs|quotes)/.test(key)
+                                  ? 'desc'
+                                  : 'asc';
+                              setSortOrder(order);
+                            }
                           }}
                         />
                         {
@@ -1973,8 +1952,9 @@ function Catchup() {
                   {/* <fieldset className="radio-field-group">
                     {['asc', 'desc'].map((key) => (
                       <label className="filter-sort" key={key}>
-                        <input
-                          type="radio"
+	                        <input
+	                          aria-label={key || t`None`}
+	                          type="radio"
                           name="filter-sort-dir"
                           checked={sortOrder === key}
                           onChange={() => {
@@ -1992,6 +1972,7 @@ function Catchup() {
                     {FILTER_GROUPS.map((key) => (
                       <label className="filter-group" key={key || 'none'}>
                         <input
+                          aria-label={key || t`None`}
                           type="radio"
                           name="filter-group"
                           checked={groupBy === key}
@@ -2174,7 +2155,7 @@ function Catchup() {
                           <Trans>Next post</Trans>
                         </td>
                         <td>
-                          <kbd>j</kbd>
+                          <kbd aria-label="j">j</kbd>
                         </td>
                       </tr>
                       <tr>
@@ -2182,7 +2163,7 @@ function Catchup() {
                           <Trans>Previous post</Trans>
                         </td>
                         <td>
-                          <kbd>k</kbd>
+                          <kbd aria-label="k">k</kbd>
                         </td>
                       </tr>
                       <tr>
@@ -2190,7 +2171,7 @@ function Catchup() {
                           <Trans>Next author</Trans>
                         </td>
                         <td>
-                          <kbd>l</kbd>
+                          <kbd aria-label="l">l</kbd>
                         </td>
                       </tr>
                       <tr>
@@ -2198,7 +2179,7 @@ function Catchup() {
                           <Trans>Previous author</Trans>
                         </td>
                         <td>
-                          <kbd>h</kbd>
+                          <kbd aria-label="h">h</kbd>
                         </td>
                       </tr>
                       <tr>
@@ -2206,7 +2187,7 @@ function Catchup() {
                           <Trans>Open post details</Trans>
                         </td>
                         <td>
-                          <kbd>Enter</kbd>
+                          <kbd aria-label="Enter">Enter</kbd>
                         </td>
                       </tr>
                       <tr>
@@ -2214,7 +2195,7 @@ function Catchup() {
                           <Trans>Scroll to top</Trans>
                         </td>
                         <td>
-                          <kbd>.</kbd>
+                          <kbd aria-label=".">.</kbd>
                         </td>
                       </tr>
                     </tbody>
@@ -2260,13 +2241,7 @@ const PostLine = memo(
     return (
       <article
         className={`post-line ${
-          group
-            ? 'group'
-            : reblog
-              ? 'reblog'
-              : hasQuote(quote)
-                ? 'quote'
-                : ''
+          group ? 'group' : reblog ? 'reblog' : hasQuote(quote) ? 'quote' : ''
         } ${isReplyTo ? 'reply-to' : ''} ${
           postIsFiltered ? 'filtered' : ''
         } visibility-${visibility}`}
@@ -2295,7 +2270,7 @@ const PostLine = memo(
               url={reblog.account.avatarStatic || reblog.account.avatar}
               squircle={reblog.account.bot}
             /> */}
-              <NameText account={reblog.account} showAvatar />
+              <CatchupNameText account={reblog.account} showAvatar />
             </span>
           ) : hasQuote(quote) ? (
             <span className="post-quote-avatar">
@@ -2314,7 +2289,10 @@ const PostLine = memo(
                 squircle={account.bot}
               />{' '}
               <Icon icon="quote" />{' '}
-              <NameText account={quoteNameTextAccount(quote)} showAvatar />
+              <CatchupNameText
+                account={quoteNameTextAccount(quote)}
+                showAvatar
+              />
             </span>
           ) : __BOOSTERS && __BOOSTERS.size > 0 ? (
             <span className="post-reblog-avatar">
@@ -2326,10 +2304,11 @@ const PostLine = memo(
                   squircle={b.bot}
                 />
               ))}{' '}
-              <Icon icon="rocket" /> <NameText account={account} showAvatar />
+              <Icon icon="rocket" />{' '}
+              <CatchupNameText account={account} showAvatar />
             </span>
           ) : (
-            <NameText account={account} showAvatar />
+            <CatchupNameText account={account} showAvatar />
           )}
         </span>
         <PostPeek
@@ -2377,6 +2356,9 @@ interface PostPeekProps {
 
 function PostPeek({ post, filterInfo }: PostPeekProps) {
   const { t } = useLingui();
+  const snapStates = useSnapshot(states);
+  const { data: canonicalPost } = usePost(post.uri);
+  const moderation = usePostModeration(canonicalPost);
   let {
     spoilerText,
     sensitive,
@@ -2392,9 +2374,7 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
   } = post;
   const isThread =
     (inReplyToId && inReplyToAccountId === account.id) || !!_thread;
-  let theQuote: QuoteLike | null = hasQuote(quote)
-    ? quoteLike(quote)
-    : null;
+  let theQuote: QuoteLike | null = hasQuote(quote) ? quoteLike(quote) : null;
   if (theQuote?.spoilerText || theQuote?.sensitive) theQuote = null;
   if (theQuote?.emojis) emojis.push(...theQuote.emojis);
   if (!mediaAttachments?.length && theQuote?.mediaAttachments?.length) {
@@ -2402,9 +2382,8 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
   }
   const cardLike = card as CardLike | null | undefined;
 
-  const prefs = getPreferences();
-  const readingExpandSpoilers = !!prefs['reading:expand:spoilers'];
-  // const readingExpandSpoilers = true;
+  const readingExpandSpoilers =
+    !!snapStates.settings['reading:expand:spoilers'];
   const showMedia =
     readingExpandSpoilers ||
     (!spoilerText &&
@@ -2415,206 +2394,212 @@ function PostPeek({ post, filterInfo }: PostPeekProps) {
   const showPostContent = !spoilerText || readingExpandSpoilers;
 
   return (
-    <div className="post-peek" title={!spoilerText ? postText : ''}>
-      <span className="post-peek-content">
-        {isThread && !showPostContent && (
-          <>
-            <span className="post-peek-tag post-peek-thread">Thread</span>{' '}
-          </>
-        )}
-        {!!filterInfo && filterInfo?.action !== 'blur' ? (
-          <span className="post-peek-filtered">
-            {/* Filtered{filterInfo?.titlesStr ? `: ${filterInfo.titlesStr}` : ''} */}
-            {filterInfo?.titlesStr
-              ? t`Filtered: ${filterInfo.titlesStr}`
-              : t`Filtered`}
-          </span>
-        ) : (
-          <>
-            {!!spoilerText && (
-              <span className="post-peek-spoiler">
-                <Icon icon={readingExpandSpoilers ? 'eye-open' : 'eye-close'} />{' '}
-                {spoilerText}
-              </span>
-            )}
-            {showPostContent && (
-              <div className="post-peek-html">
-                {isThread && (
-                  <>
-                    <span className="post-peek-tag post-peek-thread">
-                      <Trans>Thread</Trans>
-                    </span>{' '}
-                  </>
-                )}
-                {!!content && (
-                  <RawHtml
-                    html={
-                      emojifyText(content, emojis) +
-                      (theQuote?.content
-                        ? `<blockquote class="post-peek-quote">${theQuote.content}</blockquote>`
-                        : '')
-                    }
-                  />
-                )}
-                {!content &&
-                  mediaAttachments?.length === 1 &&
-                  mediaAttachments[0].description && (
-                    <>
-                      <span className="post-peek-tag post-peek-alt">ALT</span>{' '}
-                      <div>{mediaAttachments[0].description}</div>
-                    </>
-                  )}
-              </div>
-            )}
-          </>
-        )}
-      </span>
-      {(!filterInfo || filterInfo?.action === 'blur') && (
-        <span className="post-peek-post-content">
-          {mediaAttachments?.length
-            ? mediaAttachments.map((m: mastodon.v1.MediaAttachment) => {
-                const mediaURL = m.previewUrl || m.url;
-                const remoteMediaURL = m.previewRemoteUrl || m.remoteUrl;
-                const mMeta = m.meta as
-                  | {
-                      original?: { width?: number; height?: number };
-                      small?: { width?: number; height?: number };
-                    }
-                  | null
-                  | undefined;
-                const width = mMeta?.original
-                  ? mMeta.original.width
-                  : mMeta?.small?.width || mMeta?.original?.width;
-                const height = mMeta?.original
-                  ? mMeta.original.height
-                  : mMeta?.small?.height || mMeta?.original?.height;
-                const mediaByType: Record<string, JSX.Element> = {
-                  image:
-                    (mediaURL || remoteMediaURL) && showMedia ? (
-                      <img
-                        src={mediaURL ?? undefined}
-                        width={MEDIA_SIZE}
-                        height={MEDIA_SIZE}
-                        alt={m.description ?? undefined}
-                        loading="lazy"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          const { src } = target;
-                          if (
-                            src === mediaURL &&
-                            remoteMediaURL &&
-                            mediaURL !== remoteMediaURL
-                          ) {
-                            target.src = remoteMediaURL;
-                          }
-                        }}
-                        style={{
-                          '--anim-duration': `${Math.min(
-                            Math.max(
-                              Math.max(width ?? 0, height ?? 0) / 100,
-                              5,
-                            ),
-                            120,
-                          )}s`,
-                        }}
-                      />
-                    ) : (
-                      <span className="post-peek-faux-media">🖼</span>
-                    ),
-                  gifv:
-                    (mediaURL || remoteMediaURL) && showMedia ? (
-                      <img
-                        src={mediaURL ?? undefined}
-                        width={MEDIA_SIZE}
-                        height={MEDIA_SIZE}
-                        alt={m.description ?? undefined}
-                        loading="lazy"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          const { src } = target;
-                          if (
-                            src === mediaURL &&
-                            remoteMediaURL &&
-                            mediaURL !== remoteMediaURL
-                          ) {
-                            target.src = remoteMediaURL;
-                          }
-                        }}
-                      />
-                    ) : (
-                      <span className="post-peek-faux-media">🎞️</span>
-                    ),
-                  video:
-                    (mediaURL || remoteMediaURL) && showMedia ? (
-                      <img
-                        src={mediaURL ?? undefined}
-                        width={MEDIA_SIZE}
-                        height={MEDIA_SIZE}
-                        alt={m.description ?? undefined}
-                        loading="lazy"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          const { src } = target;
-                          if (
-                            src === mediaURL &&
-                            remoteMediaURL &&
-                            mediaURL !== remoteMediaURL
-                          ) {
-                            target.src = remoteMediaURL;
-                          }
-                        }}
-                      />
-                    ) : (
-                      <span className="post-peek-faux-media">📹</span>
-                    ),
-                  audio: <span className="post-peek-faux-media">🎵</span>,
-                };
-                return (
-                  <span key={m.id} className="post-peek-media">
-                    {mediaByType[m.type as string] || null}
-                  </span>
-                );
-              })
-            : !!cardLike &&
-              cardLike.image &&
-              showMedia && (
-                <span
-                  className={`post-peek-media post-peek-card card-${
-                    cardLike.type || ''
-                  }`}
-                >
-                  {cardLike.image ? (
-                    <img
-                      src={cardLike.image}
-                      width={MEDIA_SIZE}
-                      height={MEDIA_SIZE}
-                      alt={
-                        cardLike.title ||
-                        cardLike.description ||
-                        cardLike.imageDescription
-                      }
-                      loading="lazy"
-                      style={{
-                        '--anim-duration':
-                          cardLike.width &&
-                          cardLike.height &&
-                          `${Math.min(
-                            Math.max(
-                              Math.max(cardLike.width, cardLike.height) / 100,
-                              5,
-                            ),
-                            120,
-                          )}s`,
-                      }}
-                    />
-                  ) : (
-                    <span className="post-peek-faux-media">🔗</span>
-                  )}
+    <ModerationGate decision={moderation}>
+      <div className="post-peek" title={!spoilerText ? postText : ''}>
+        <span className="post-peek-content">
+          {isThread && !showPostContent && (
+            <>
+              <span className="post-peek-tag post-peek-thread">
+                Thread
+              </span>{' '}
+            </>
+          )}
+          {!!filterInfo && filterInfo?.action !== 'blur' ? (
+            <span className="post-peek-filtered">
+              {/* Filtered{filterInfo?.titlesStr ? `: ${filterInfo.titlesStr}` : ''} */}
+              {filterInfo?.titlesStr
+                ? t`Filtered: ${filterInfo.titlesStr}`
+                : t`Filtered`}
+            </span>
+          ) : (
+            <>
+              {!!spoilerText && (
+                <span className="post-peek-spoiler">
+                  <Icon
+                    icon={readingExpandSpoilers ? 'eye-open' : 'eye-close'}
+                  />{' '}
+                  {spoilerText}
                 </span>
               )}
+              {showPostContent && (
+                <div className="post-peek-html">
+                  {isThread && (
+                    <>
+                      <span className="post-peek-tag post-peek-thread">
+                        <Trans>Thread</Trans>
+                      </span>{' '}
+                    </>
+                  )}
+                  {!!content && (
+                    <RawHtml
+                      html={
+                        emojifyText(content, emojis) +
+                        (theQuote?.content
+                          ? `<blockquote class="post-peek-quote">${theQuote.content}</blockquote>`
+                          : '')
+                      }
+                    />
+                  )}
+                  {!content &&
+                    mediaAttachments?.length === 1 &&
+                    mediaAttachments[0].description && (
+                      <>
+                        <span className="post-peek-tag post-peek-alt">ALT</span>{' '}
+                        <div>{mediaAttachments[0].description}</div>
+                      </>
+                    )}
+                </div>
+              )}
+            </>
+          )}
         </span>
-      )}
-    </div>
+        {(!filterInfo || filterInfo?.action === 'blur') && (
+          <span className="post-peek-post-content">
+            {mediaAttachments?.length
+              ? mediaAttachments.map((m: CatchupMediaAttachment) => {
+                  const mediaURL = m.previewUrl || m.url;
+                  const remoteMediaURL = m.previewRemoteUrl || m.remoteUrl;
+                  const mMeta = m.meta as
+                    | {
+                        original?: { width?: number; height?: number };
+                        small?: { width?: number; height?: number };
+                      }
+                    | null
+                    | undefined;
+                  const width = mMeta?.original
+                    ? mMeta.original.width
+                    : mMeta?.small?.width || mMeta?.original?.width;
+                  const height = mMeta?.original
+                    ? mMeta.original.height
+                    : mMeta?.small?.height || mMeta?.original?.height;
+                  const mediaByType: Record<string, JSX.Element> = {
+                    image:
+                      (mediaURL || remoteMediaURL) && showMedia ? (
+                        <img
+                          src={mediaURL ?? undefined}
+                          width={MEDIA_SIZE}
+                          height={MEDIA_SIZE}
+                          alt={m.description ?? undefined}
+                          loading="lazy"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            const { src } = target;
+                            if (
+                              src === mediaURL &&
+                              remoteMediaURL &&
+                              mediaURL !== remoteMediaURL
+                            ) {
+                              target.src = remoteMediaURL;
+                            }
+                          }}
+                          style={{
+                            '--anim-duration': `${Math.min(
+                              Math.max(
+                                Math.max(width ?? 0, height ?? 0) / 100,
+                                5,
+                              ),
+                              120,
+                            )}s`,
+                          }}
+                        />
+                      ) : (
+                        <span className="post-peek-faux-media">🖼</span>
+                      ),
+                    gifv:
+                      (mediaURL || remoteMediaURL) && showMedia ? (
+                        <img
+                          src={mediaURL ?? undefined}
+                          width={MEDIA_SIZE}
+                          height={MEDIA_SIZE}
+                          alt={m.description ?? undefined}
+                          loading="lazy"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            const { src } = target;
+                            if (
+                              src === mediaURL &&
+                              remoteMediaURL &&
+                              mediaURL !== remoteMediaURL
+                            ) {
+                              target.src = remoteMediaURL;
+                            }
+                          }}
+                        />
+                      ) : (
+                        <span className="post-peek-faux-media">🎞️</span>
+                      ),
+                    video:
+                      (mediaURL || remoteMediaURL) && showMedia ? (
+                        <img
+                          src={mediaURL ?? undefined}
+                          width={MEDIA_SIZE}
+                          height={MEDIA_SIZE}
+                          alt={m.description ?? undefined}
+                          loading="lazy"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            const { src } = target;
+                            if (
+                              src === mediaURL &&
+                              remoteMediaURL &&
+                              mediaURL !== remoteMediaURL
+                            ) {
+                              target.src = remoteMediaURL;
+                            }
+                          }}
+                        />
+                      ) : (
+                        <span className="post-peek-faux-media">📹</span>
+                      ),
+                    audio: <span className="post-peek-faux-media">🎵</span>,
+                  };
+                  return (
+                    <span key={m.id} className="post-peek-media">
+                      {mediaByType[m.type as string] || null}
+                    </span>
+                  );
+                })
+              : !!cardLike &&
+                cardLike.image &&
+                showMedia && (
+                  <span
+                    className={`post-peek-media post-peek-card card-${
+                      cardLike.type || ''
+                    }`}
+                  >
+                    {cardLike.image ? (
+                      <img
+                        src={cardLike.image}
+                        width={MEDIA_SIZE}
+                        height={MEDIA_SIZE}
+                        alt={
+                          cardLike.title ||
+                          cardLike.description ||
+                          cardLike.imageDescription
+                        }
+                        loading="lazy"
+                        style={{
+                          '--anim-duration':
+                            cardLike.width &&
+                            cardLike.height &&
+                            `${Math.min(
+                              Math.max(
+                                Math.max(cardLike.width, cardLike.height) / 100,
+                                5,
+                              ),
+                              120,
+                            )}s`,
+                        }}
+                      />
+                    ) : (
+                      <span className="post-peek-faux-media">🔗</span>
+                    )}
+                  </span>
+                )}
+          </span>
+        )}
+      </div>
+    </ModerationGate>
   );
 }
 

@@ -146,7 +146,7 @@ export default function FeedbackModal({
   }
 
   return (
-    <div className="feedback-modal-container" data-testid="feedback-modal">
+    <div className="feedback-modal-container">
       <div className="top-controls">
         <h1>
           <Trans>Send feedback</Trans>

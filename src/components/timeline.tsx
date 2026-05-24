@@ -508,7 +508,6 @@ function Timeline({
       ? cached
       : null;
   });
-
   const [items, setItems] = useState<TimelineEntry[]>(cachedData?.items || []);
   const [uiState, setUIState] = useState<UIState>(
     cachedData ? 'default' : 'start',
@@ -1436,7 +1435,7 @@ interface StatusCarouselProps {
   children: ReactNode;
 }
 
-function StatusCarousel({
+export function StatusCarousel({
   title,
   class: classProp,
   className = classProp,

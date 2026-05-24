@@ -12,7 +12,7 @@ export type FeedFilter = 'posts' | 'posts-and-replies' | 'media';
 
 export type FeedOpts = Readonly<Record<string, unknown>> | undefined;
 
-export type NotifFilter = string | undefined;
+export type NotifFilter = string | readonly string[] | undefined;
 
 export function appviewKey(appviewDid: string, origin: string): string {
   return `${appviewDid}|${origin}`;
@@ -42,6 +42,7 @@ export const keys = {
   timeline: (s: ViewerScope) => [...s, 'timeline'] as const,
   feed: (s: ViewerScope, generator: AtUri, opts?: FeedOpts) =>
     [...s, 'feed', generator, opts] as const,
+  listFeed: (s: ViewerScope, list: AtUri) => [...s, 'listFeed', list] as const,
   thread: (s: ViewerScope, uri: AtUri) => [...s, 'thread', uri] as const,
   profileFeed: (s: ViewerScope, did: string, filter?: FeedFilter) =>
     [...s, 'profileFeed', did, filter] as const,

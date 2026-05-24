@@ -51,7 +51,6 @@ declare global {
     __BENCH_RESULTS?: Map<string, unknown>;
     __BENCHMARK?: BluepyBenchmark;
     __BLUEPY_OAUTH_ARGS__?: unknown;
-    __BLUEPY_OAUTH_TEST_CLIENT__?: unknown;
     __CLOAK__?: () => void;
     __COMPOSE__?: unknown;
     __generateCodeChallenge?: unknown;

@@ -22,6 +22,7 @@ import Link from '../components/link';
 import Loader from '../components/loader';
 import NavMenu from '../components/nav-menu';
 import RecentSearches from '../components/recent-searches';
+import SearchDataResults from '../components/search-data-results';
 import SearchForm from '../components/search-form';
 import StatusComponent, {
   type StatusComponentProps,
@@ -359,7 +360,9 @@ function Search({ columnMode, ...props }: SearchProps) {
     let timer: ReturnType<typeof setTimeout> | undefined;
     searchFormRef.current?.setValue?.(q || '');
     if (q) {
-      loadResults(true);
+      if (!atproto || type === 'hashtags') {
+        loadResults(true);
+      }
     } else {
       timer = setTimeout(() => {
         searchFormRef.current?.focus?.();
@@ -368,7 +371,7 @@ function Search({ columnMode, ...props }: SearchProps) {
     return () => {
       clearTimeout(timer);
     };
-  }, [q, type, instance, loadResults]);
+  }, [q, type, instance, loadResults, atproto]);
 
   useHotkeys(
     ['Slash', '/'],
@@ -551,6 +554,14 @@ function Search({ columnMode, ...props }: SearchProps) {
             </div>
           )}
           {q ? (
+            atproto && type !== 'hashtags' ? (
+              <SearchDataResults
+                query={q}
+                type={type}
+                instance={instance}
+                headerStart={false}
+              />
+            ) : (
             <>
               {(!type || type === 'accounts') && (
                 <>
@@ -772,6 +783,7 @@ function Search({ columnMode, ...props }: SearchProps) {
                   )
                 ))}
             </>
+            )
           ) : uiState === 'loading' ? (
             <p className="ui-state">
               <Loader abrupt />

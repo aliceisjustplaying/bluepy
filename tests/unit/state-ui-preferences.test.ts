@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
+import { uiPreferencesPatchFromValtioChange } from '../../src/state/legacy-states-bridge';
 import {
   bootstrapUiPreferencesForDid,
   DEFAULT_UI_PREFERENCES,
@@ -44,5 +45,20 @@ describe('useUiPreferencesStore', () => {
       autoRefresh: false,
     });
     expect(again.autoRefresh).toBe(true);
+  });
+
+  test('legacy settings bridge preserves nested field updates as patches', () => {
+    expect(
+      uiPreferencesPatchFromValtioChange(['settings', 'boostsCarousel'], false),
+    ).toEqual({
+      boostsCarousel: false,
+    });
+    expect(
+      uiPreferencesPatchFromValtioChange('settings', {
+        autoRefresh: true,
+      }),
+    ).toEqual({
+      autoRefresh: true,
+    });
   });
 });

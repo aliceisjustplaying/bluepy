@@ -15,8 +15,10 @@ import {
   primePosts,
   primeProfiles,
 } from '../../src/data/_internal/prime';
+import { postViewToCatchupSummary } from '../../src/data/catchup';
 import { appviewKey, keys, stableHash } from '../../src/data/keys';
 import { createQueryClient } from '../../src/data/query-client';
+import { postViewToDisplayStatus } from '../../src/render/post-view-map';
 
 const fixtureDir = join(import.meta.dir, '../fixtures/atproto');
 
@@ -100,6 +102,55 @@ describe('primePosts', () => {
       );
       expect(recordWrapper.record?.uri).toBe(quotedUri);
     }
+  });
+
+  test('primed quote refs render through the legacy status bridge', () => {
+    const qc = createQueryClient();
+    const parentUri =
+      'at://did:plc:fixture126/app.bsky.feed.post/3mmk5flpzok2s';
+    const quotedUri =
+      'at://did:plc:fixture127/app.bsky.feed.post/3mmk4rgucvs2e';
+    primePosts(qc, viewerScope, loadFixture('searchPosts.json'));
+
+    const parent = qc.getQueryData<AppBskyFeedDefs.PostView>(
+      keys.post(viewerScope, parentUri),
+    );
+    expect(parent).toBeTruthy();
+
+    const status = postViewToDisplayStatus(
+      parent!,
+      {} as never,
+      (uri) => qc.getQueryData<AppBskyFeedDefs.PostView>(keys.post(viewerScope, uri)),
+    );
+    expect(status.quote?.quotedStatus?.uri).toBe(quotedUri);
+  });
+
+  test('catch-up summaries read media from recordWithMedia embeds', () => {
+    const post = makePostWithEmbed({
+      $type: 'app.bsky.embed.recordWithMedia#view',
+      media: {
+        $type: 'app.bsky.embed.images#view',
+        images: [
+          {
+            thumb: 'https://cdn.example/thumb.jpg',
+            fullsize: 'https://cdn.example/full.jpg',
+            alt: 'fixture image',
+            aspectRatio: { width: 800, height: 600 },
+          },
+        ],
+      },
+      record: {
+        $type: 'app.bsky.embed.record#viewNotFound',
+        uri: 'at://did:plc:missing/app.bsky.feed.post/missing',
+        notFound: true,
+      },
+    } as AppBskyFeedDefs.PostView['embed']);
+
+    const summary = postViewToCatchupSummary(post);
+    expect(summary.mediaAttachments?.[0]?.url).toBe(
+      'https://cdn.example/full.jpg',
+    );
+    expect(summary.mediaAttachments?.[0]?.description).toBe('fixture image');
   });
 
   test('getPostThread.deep primes nested replies', () => {

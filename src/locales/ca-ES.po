@@ -79,6 +79,10 @@ msgstr "Mostra tots els autors"
 #~ msgid "Ask a question"
 #~ msgstr "Fes una pregunta"
 
+#: src/components/notifications-feed.tsx
+msgid "replied to you"
+msgstr ""
+
 #: src/components/report-modal.tsx
 msgid "Other"
 msgstr "Altres"
@@ -182,7 +186,7 @@ msgstr "S'ha copiat la configuració de la drecera"
 msgid "anyone"
 msgstr "qualsevol"
 
-#: src/pages/account-statuses.tsx
+#: src/components/search-data-results.tsx
 #: src/pages/search.tsx
 msgid "Posts"
 msgstr "Publicacions"
@@ -431,6 +435,7 @@ msgstr ""
 #: src/components/generic-accounts.tsx
 #: src/components/quote-chain-modal.tsx
 #: src/components/quotes-modal.tsx
+#: src/components/search-data-results.tsx
 #: src/components/timeline.tsx
 #: src/components/timeline2.tsx
 #: src/pages/search.tsx
@@ -476,6 +481,10 @@ msgstr ""
 #~ msgid "{0, plural, one {# hashtag} other {# hashtags}}"
 #~ msgstr "{0, plural, one {# etiqueta} other {# etiquetes}}"
 
+#: src/components/notifications-feed.tsx
+msgid "verified you"
+msgstr ""
+
 #: src/components/report-modal.tsx
 msgid "Pending review"
 msgstr "Pendent de revisió"
@@ -484,6 +493,7 @@ msgstr "Pendent de revisió"
 #~ msgid "Continue with {selectedInstanceText}"
 #~ msgstr "Continueu amb {selectedInstanceText}"
 
+#: src/components/timeline-feed.tsx
 #: src/components/timeline.tsx
 #: src/pages/settings.tsx
 msgid "New posts"
@@ -535,9 +545,14 @@ msgstr ""
 #~ msgid "Quote settings updated"
 #~ msgstr "S'ha actualitzat la configuració de les cites"
 
+#: src/pages/account-statuses.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Year"
 msgstr ""
+
+#: src/pages/catchup.tsx
+#~ msgid "h"
+#~ msgstr ""
 
 #: src/pages/accounts.tsx
 msgid "Switch to this account"
@@ -771,6 +786,10 @@ msgstr "Mostra'n menys"
 msgid "Push notifications are blocked. Please enable them in your browser settings."
 msgstr "Les notificacions estan bloquejades. Si us plau, activeu-les al vostre navegador."
 
+#: src/components/account-info.tsx
+msgid "Loading post stats..."
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
 msgstr "Voleu afegir-hi les dreceres actuals?"
@@ -870,8 +889,7 @@ msgstr "Mutu"
 msgid "Report post…"
 msgstr "Denuncia la publicació…"
 
-#: src/pages/following.tsx
-#: src/pages/following2.tsx
+#: src/components/timeline-feed.tsx
 #: src/pages/list.tsx
 msgid "Unable to load posts."
 msgstr "No ha estat possible carregar les publicacions."
@@ -1025,6 +1043,10 @@ msgstr "Elimina el compte…"
 msgid "Image description generator"
 msgstr "Generador de descripcions d'imatges"
 
+#: src/components/notifications-feed.tsx
+msgid "liked your repost"
+msgstr ""
+
 #: src/pages/hashtag.tsx
 #~ msgid "Featured on profile"
 #~ msgstr "Destacades al perfil"
@@ -1042,6 +1064,10 @@ msgstr "Automatitzat"
 #: src/pages/trending.tsx
 #~ msgid "Trending News"
 #~ msgstr "Ara és tendència"
+
+#: src/pages/catchup.tsx
+#~ msgid "Enter"
+#~ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
 msgid "Open media or post details"
@@ -1099,6 +1125,10 @@ msgstr "p. ex. PixelArt (màx. 5, separats per espais)"
 #: src/components/import-export-accounts.tsx
 msgid "{0, plural, one {# account} other {# accounts}}"
 msgstr "{0, plural, one {# compte} other {# comptes}}"
+
+#: src/components/notifications-feed.tsx
+msgid "reposted your repost"
+msgstr ""
 
 #: src/components/account-info.tsx
 msgid "Go to account page"
@@ -1222,6 +1252,8 @@ msgstr "Cerca: {q} (etiquetes)"
 msgid "<0/> <1>reposted</1>"
 msgstr ""
 
+#: src/components/moderation-gate.tsx
+#: src/components/profile-moderation-gate.tsx
 #: src/components/status-quotes.tsx
 msgid "Show anyway"
 msgstr "Mostra-ho de totes maneres"
@@ -1328,6 +1360,7 @@ msgstr "Codi HTML copiat"
 #~ msgid "Filtered post will be…"
 #~ msgstr "La publicació filtrada serà…"
 
+#: src/components/search-data-results.tsx
 #: src/pages/search.tsx
 msgid "See more accounts"
 msgstr "Veure més comptes"
@@ -1347,6 +1380,7 @@ msgstr "Cerca a les meves publicacions"
 
 #: src/components/generic-accounts.tsx
 #: src/components/notification.tsx
+#: src/components/search-data-results.tsx
 #: src/pages/accounts.tsx
 #: src/pages/search.tsx
 msgid "Accounts"
@@ -1380,6 +1414,10 @@ msgstr "Torna a dalt"
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
 msgstr ""
+
+#: src/pages/catchup.tsx
+#~ msgid "k"
+#~ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "Go to original profile page"
@@ -1793,6 +1831,10 @@ msgstr "S'admeten diverses etiquetes. Separades per espais."
 #~ msgid "Search emoji"
 #~ msgstr "Cerca un emoji"
 
+#: src/components/profile-moderation-gate.tsx
+msgid "Profile hidden by moderation settings"
+msgstr ""
+
 #: src/pages/notifications.tsx
 msgid "Today"
 msgstr "Avui"
@@ -1991,6 +2033,7 @@ msgstr "Seguint-ne"
 #. js-lingui-explicit-id
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
+#: src/components/timeline-feed.tsx
 #: src/pages/following.tsx
 #: src/pages/following2.tsx
 msgid "following.title"
@@ -2264,6 +2307,10 @@ msgstr "No s'han pogut obtenir les respostes."
 msgid "You have unsaved changes. Discard this post?"
 msgstr "Hi ha canvis sense desar. Voleu descartar la publicació?"
 
+#: src/pages/catchup.tsx
+msgid "All posts"
+msgstr ""
+
 #: src/pages/account-statuses.jsx
 #~ msgid "{accountDisplay} (+ Replies)"
 #~ msgstr "{accountDisplay} (+ Respostes)"
@@ -2288,6 +2335,7 @@ msgstr "Següent"
 msgid "Create"
 msgstr "Crea"
 
+#: src/components/search-data-results.tsx
 #: src/pages/search.tsx
 msgid "No posts found."
 msgstr "No s'ha trobat cap publicació."
@@ -2298,6 +2346,7 @@ msgstr "Afegeix a les dreceres"
 
 #: src/components/columns.tsx
 #: src/components/nav-menu.tsx
+#: src/components/post-uri-feed.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/timeline.tsx
 #: src/components/timeline2.tsx
@@ -2352,6 +2401,7 @@ msgid "{account} published a post."
 msgstr "{account} ha compartit una publicació."
 
 #: src/components/nav-menu.tsx
+#: src/components/notifications-feed.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/home.tsx
 #: src/pages/list.tsx
@@ -2463,6 +2513,8 @@ msgid "Cloak mode enabled"
 msgstr "Mode ocult activat"
 
 #. placeholder {0}: fItems.length
+#. placeholder {0}: items.length
+#: src/components/post-uri-feed.tsx
 #: src/components/timeline.tsx
 msgid "{0, plural, one {# Repost} other {# Reposts}}"
 msgstr ""
@@ -2634,7 +2686,6 @@ msgstr "Aquesta notificació és d'un altre compte vostre."
 #: src/components/account-info.tsx
 #: src/components/timeline.tsx
 #: src/components/timeline2.tsx
-#: src/pages/home.tsx
 #: src/pages/notifications.tsx
 #: src/pages/status.tsx
 msgid "Try again"
@@ -2863,6 +2914,7 @@ msgstr "Mode ocult <0>(<1>Text</1> → <2>████</2>)</0>"
 #~ msgid "Synced to your {appviewLabel} account settings. <0>Open {appviewLabel} settings.</0>"
 #~ msgstr ""
 
+#: src/components/search-data-results.tsx
 #: src/pages/search.tsx
 msgid "See more posts"
 msgstr "Veure més publicacions"
@@ -2910,6 +2962,10 @@ msgstr "No tots els mèdia tenen descripció."
 #: src/compose.tsx
 msgid "You may close this page now."
 msgstr "Podeu tancar aquesta pàgina ara."
+
+#: src/pages/catchup.tsx
+#~ msgid "l"
+#~ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "Posts tagged with <0>{hashtag}</0>"
@@ -2960,6 +3016,10 @@ msgstr "Descripció del vídeo"
 #: src/components/compose.tsx
 msgid "Some media have no descriptions. Continue?"
 msgstr "Alguns mitjans no tenen descripcions. Voleu continuar?"
+
+#: src/components/notifications-feed.tsx
+msgid "reposted your post"
+msgstr ""
 
 #: src/components/list-add-edit.tsx
 #~ msgid "Show replies to people I follow"
@@ -3058,6 +3118,10 @@ msgstr "Veure més etiquetes"
 msgid "Keep as link"
 msgstr "Manté com un enllaç"
 
+#: src/components/search-data-results.tsx
+msgid "Unable to load search results."
+msgstr ""
+
 #: src/pages/status.tsx
 msgid "Go to main post"
 msgstr "Ves a la publicació principal"
@@ -3078,8 +3142,9 @@ msgstr "Donacions"
 msgid "Failed to unwrap quote chain"
 msgstr "No s'ha pogut desembolicar la cadena de cites"
 
-#: src/pages/following.tsx
-#: src/pages/following2.tsx
+#: src/components/notifications-feed.tsx
+#: src/components/post-uri-feed.tsx
+#: src/components/timeline-feed.tsx
 msgid "Nothing to see here."
 msgstr "No hi ha res a veure ací."
 
@@ -3126,11 +3191,19 @@ msgstr ""
 msgid "Notifications from muted accounts are always hidden."
 msgstr ""
 
+#: src/pages/catchup.tsx
+#~ msgid "j"
+#~ msgstr ""
+
 #. Relative time in hours, as short as possible
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
 msgid "{0}h"
 msgstr "{0}h"
+
+#: src/pages/catchup.tsx
+#~ msgid "Period"
+#~ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Media attachments can be images, videos, audios or any file types."
@@ -3178,6 +3251,10 @@ msgstr "Patrocinadors"
 msgid "Generate description…"
 msgstr "Genera una descripció…"
 
+#: src/pages/home.tsx
+msgid "No notifications yet."
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "No new shortcuts to import"
 msgstr "No hi ha dreceres noves per importar"
@@ -3189,6 +3266,14 @@ msgstr "*Ja existeix a les dreceres actuals"
 #: src/pages/notifications.tsx
 msgid "Filter"
 msgstr "Filtra"
+
+#: src/components/notifications-feed.tsx
+msgid "quoted your post"
+msgstr ""
+
+#: src/components/search-data-results.tsx
+msgid "Search: {query} (Posts)"
+msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Who don't follow you"
@@ -3437,6 +3522,7 @@ msgid "Unable to block {username}"
 msgstr "No ha estat possible blocar a {username}"
 
 #. js-lingui-explicit-id
+#: src/components/post-thread-page.tsx
 #: src/pages/status.tsx
 msgid "post.title"
 msgstr "Publicació"
@@ -3591,6 +3677,11 @@ msgstr "Redacta"
 #~ msgid "Show featured profiles"
 #~ msgstr "Mostra els perfils destacats"
 
+#: src/components/notifications-feed.tsx
+#: src/components/post-uri-feed.tsx
+msgid "That's all for now."
+msgstr ""
+
 #: src/pages/filters.tsx
 #~ msgid "Never"
 #~ msgstr "Mai"
@@ -3615,6 +3706,10 @@ msgstr "{totalComments, plural, one {# comentari} other {<0>{0}</0> comentaris}}
 #: src/components/related-actions.tsx
 msgid "Report <0>@{username}</0>…"
 msgstr "Denúncia a <0>@{username}</0>…"
+
+#: src/components/notifications-feed.tsx
+msgid "removed your verification"
+msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Disable all animations"
@@ -3789,6 +3884,10 @@ msgstr "S'està resolent…"
 #~ msgid "{mentionsCount, plural, other {# mentions}}"
 #~ msgstr "{mentionsCount, plural, one {}other {# mencions}}"
 
+#: src/components/notifications-feed.tsx
+msgid "mentioned you"
+msgstr ""
+
 #: src/pages/status.tsx
 #~ msgid "Switch to post's server"
 #~ msgstr "Canvia al servidor del compte"
@@ -3807,6 +3906,10 @@ msgstr "{repliesCount, plural, one {# resposta} other {# respostes}}"
 
 #: src/components/atproto-labels.tsx
 msgid "Explicit or potentially disturbing media."
+msgstr ""
+
+#: src/components/moderation-gate.tsx
+msgid "Content hidden by moderation settings"
 msgstr ""
 
 #: src/components/media-attachment.tsx
@@ -4226,6 +4329,7 @@ msgstr "Pestanya/Barra de menú"
 
 #: src/components/generic-accounts.tsx
 #: src/components/quotes-modal.tsx
+#: src/components/search-data-results.tsx
 #: src/components/timeline.tsx
 #: src/pages/list.tsx
 #: src/pages/notifications.tsx
@@ -4366,6 +4470,10 @@ msgstr "Instal·la {CLIENT_NAME}"
 msgid "beyond 12 hours"
 msgstr "més de 12 hores"
 
+#: src/components/post-uri-feed.tsx
+msgid "Reposted by <0>{handle}</0>"
+msgstr ""
+
 #: src/pages/filters.tsx
 #~ msgid "Profiles"
 #~ msgstr "Perfils"
@@ -4469,6 +4577,10 @@ msgstr "Cerca: {q}"
 #: src/pages/notifications.tsx
 msgid "Filter out notifications from people:"
 msgstr "Exclou les notificacions de:"
+
+#: src/components/notifications-feed.tsx
+msgid "posted"
+msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Push Notifications (beta)"
@@ -4574,6 +4686,10 @@ msgstr "S'està eliminant la Posada al dia {0}"
 #~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies}}} density {{sortOrder, select, asc {least dense} desc {most dense}}}} first{groupBy, select, account {, grouped by authors} other {}}"
 #~ msgstr "Es mostren {selectedFilterCategory, select, all {totes les publicacions} original {publicacions originals} replies {respostes} boosts {impulsos} quotes {cites} followedTags {etiquetes seguides} groups {grups} filtered {publicacions filtrades}}, {sortBy, select, createdAt {{sortOrder, select, asc {més antiga} desc {més recent}}} reblogsCount {{sortOrder, select, asc {amb menys impulsos} desc {amb més impulsos}}} favouritesCount {{sortOrder, select, asc {amb menys favorits} desc {amb més favorits}}} repliesCount {{sortOrder, select, asc {amb menys respostes} desc {amb més respostes}}} density {{sortOrder, select, asc {amb menys densitat} desc {amb més densitat}}}} primer{groupBy, select, account {, agrupat per autors} other {}}"
 
+#: src/components/notifications-feed.tsx
+msgid "joined your starter pack"
+msgstr ""
+
 #: src/components/notification.tsx
 msgid "Lost connections with <0>{name}</0>."
 msgstr "S'han perdut les connexions amb <0>{name}</0>."
@@ -4604,6 +4720,10 @@ msgstr "Posada al dia"
 msgid "Specific list is optional."
 msgstr ""
 
+#: src/components/notifications-feed.tsx
+msgid "joined from your contacts"
+msgstr ""
+
 #: src/components/drafts.tsx
 #: src/pages/account-statuses.tsx
 msgid "Media"
@@ -4619,6 +4739,10 @@ msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "email or Bluesky handle"
+msgstr ""
+
+#: src/components/post-thread-page.tsx
+msgid "Post"
 msgstr ""
 
 #: src/components/report-modal.tsx
@@ -4654,9 +4778,17 @@ msgstr "Anteriorment…"
 #~ msgid "New filter"
 #~ msgstr "Filtre nou"
 
+#: src/pages/notifications.tsx
+#~ msgid "Unable to load notifications."
+#~ msgstr ""
+
 #: src/components/status-account-menu.tsx
 #~ msgid "Quote removed"
 #~ msgstr "S'ha eliminat la cita"
+
+#: src/components/notifications-feed.tsx
+msgid "followed you"
+msgstr ""
 
 #: src/components/status-quick-menu.tsx
 #~ msgid "Quote with link"
@@ -4737,9 +4869,14 @@ msgstr "Sol·licitat per"
 msgid "Post unpinned from profile"
 msgstr "La publicació ja no està fixada al perfil"
 
+#: src/components/search-data-results.tsx
 #: src/pages/search.tsx
 msgid "No accounts found."
 msgstr "No s'ha trobat cap compte."
+
+#: src/components/notifications-feed.tsx
+msgid "liked your post"
+msgstr ""
 
 #: src/pages/accounts.jsx
 #~ msgid "Remove <0>@{0}</0>?"
@@ -4770,6 +4907,7 @@ msgstr "Esborra-ho tot"
 #: src/components/notification-service.tsx
 #: src/components/open-link-sheet.tsx
 #: src/components/post-embed-modal.tsx
+#: src/components/post-thread-page.tsx
 #: src/components/qr-code-modal.tsx
 #: src/components/qr-scanner-modal.tsx
 #: src/components/quote-chain-modal.tsx
@@ -4838,6 +4976,10 @@ msgstr "Identificador copiat"
 #~ msgid "<0/> <1/> boosted"
 #~ msgstr "<0/> <1/> ha impulsat"
 
+#: src/pages/catchup.tsx
+msgid "Catch-up range"
+msgstr ""
+
 #: src/pages/welcome.jsx
 #~ msgid "Log in with Mastodon"
 #~ msgstr "Inicieu la sessió amb Mastodon"
@@ -4865,6 +5007,10 @@ msgstr ""
 #: src/components/account-info.tsx
 msgid "View profile header"
 msgstr "Veure imatge de la capçalera"
+
+#: src/components/notifications-feed.tsx
+msgid "Sign in to view notifications."
+msgstr ""
 
 #: src/pages/login.tsx
 #~ msgid "Failed to register application"

@@ -1,3 +1,6 @@
+import type { Agent } from '@atproto/api';
+import type { OAuthSession } from '@atproto/oauth-client-browser';
+import { useQuery } from '@tanstack/react-query';
 import {
   createContext,
   use,
@@ -7,9 +10,6 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import type { Agent } from '@atproto/api';
-import type { OAuthSession } from '@atproto/oauth-client-browser';
-import { useQuery } from '@tanstack/react-query';
 
 import {
   baselineAcceptedLabelers,
@@ -19,13 +19,19 @@ import {
   type ClientBundle,
 } from '../data/clients';
 import {
+  createAppPasswordAgentForDid,
+  syncSessionsStoreFromLegacyAccount,
+} from '../data/legacy-session';
+import {
   DEFAULT_APPVIEW_CONFIG,
+  type AppViewConfig,
   useSessionsStore,
 } from '../state/sessions';
 import {
   getCachedAtprotoOAuthSession,
   restoreAtprotoOAuthSession,
 } from '../utils/atproto-oauth';
+import { AUTH_CHANGED_EVENT } from '../utils/auth-context';
 
 const ClientsContext = createContext<ClientBundle | null>(null);
 const ActiveSessionContext = createContext<OAuthSession | null>(null);
@@ -35,6 +41,20 @@ const AcceptedLabelerDidsContext = createContext<readonly string[]>(
 const AcceptedLabelerSyncContext = createContext<
   (dids: readonly string[]) => void
 >(() => {});
+
+const LEGACY_APPVIEW_CONFIGS: Record<string, AppViewConfig> = {
+  bluesky: DEFAULT_APPVIEW_CONFIG,
+  blacksky: {
+    service: 'https://api.blacksky.community',
+    proxyDid: 'did:web:api.blacksky.community',
+    origin: 'https://api.blacksky.community',
+  },
+};
+
+function getLoggedOutAppViewConfig(): AppViewConfig {
+  const legacyKey = window.localStorage.getItem('settings-appview');
+  return LEGACY_APPVIEW_CONFIGS[legacyKey ?? ''] ?? DEFAULT_APPVIEW_CONFIG;
+}
 
 export function useAcceptedLabelerDids(): readonly string[] {
   return use(AcceptedLabelerDidsContext);
@@ -52,12 +72,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     activeDid
       ? (state.perAccountPrefs[activeDid]?.activeAppView ??
         DEFAULT_APPVIEW_CONFIG)
-      : DEFAULT_APPVIEW_CONFIG,
+      : getLoggedOutAppViewConfig(),
   );
 
   const [session, setSession] = useState<OAuthSession | null>(() =>
     activeDid ? getCachedAtprotoOAuthSession(activeDid) : null,
   );
+  const [legacyAuthVersion, setLegacyAuthVersion] = useState(0);
   const [acceptedLabelerDids, setAcceptedLabelerDids] = useState<
     readonly string[]
   >(() => baselineAcceptedLabelers());
@@ -71,6 +92,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       }
       return dids;
     });
+  }, []);
+
+  useEffect(() => {
+    syncSessionsStoreFromLegacyAccount();
+    const onAuthChanged = () => {
+      syncSessionsStoreFromLegacyAccount();
+      setLegacyAuthVersion((version) => version + 1);
+    };
+    window.addEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
+    return () => {
+      window.removeEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
+    };
   }, []);
 
   useEffect(() => {
@@ -91,9 +124,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
 
       for (const did of knownDids) {
-        if (!restored.includes(did)) {
-          removeKnown(did);
-        }
+        if (restored.includes(did)) continue;
+        // App-password accounts have no OAuth session; keep them in knownDids.
+        if (createAppPasswordAgentForDid(did)) continue;
+        removeKnown(did);
       }
     })();
 
@@ -117,6 +151,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      setSession(null);
       try {
         const restored = await restoreAtprotoOAuthSession(activeDid);
         if (!cancelled) setSession(restored);
@@ -136,19 +171,37 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [activeDid]);
 
+  const activeSession = session?.sub === activeDid ? session : null;
+  const [appPasswordAgent, setAppPasswordAgent] = useState<Agent | null>(null);
+
+  useEffect(() => {
+    if (!activeDid || activeSession) {
+      setAppPasswordAgent(null);
+      return;
+    }
+    setAppPasswordAgent(createAppPasswordAgentForDid(activeDid));
+  }, [activeDid, activeSession, legacyAuthVersion]);
+
   const clients = useMemo(
     () =>
       createClients({
-        session,
+        session: activeSession,
+        appPasswordAgent,
         activeAppViewService: appViewCfg.service,
         activeAppViewDid: appViewCfg.proxyDid,
         acceptedLabelerDids,
       }),
-    [acceptedLabelerDids, appViewCfg.proxyDid, appViewCfg.service, session],
+    [
+      acceptedLabelerDids,
+      appPasswordAgent,
+      appViewCfg.proxyDid,
+      appViewCfg.service,
+      activeSession,
+    ],
   );
 
   return (
-    <ActiveSessionContext.Provider value={session}>
+    <ActiveSessionContext.Provider value={activeSession}>
       <AcceptedLabelerSyncContext.Provider value={syncAcceptedLabelers}>
         <AcceptedLabelerDidsContext.Provider value={acceptedLabelerDids}>
           <ClientsContext.Provider value={clients}>

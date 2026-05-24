@@ -22,10 +22,12 @@ export const useRevealsStore = create<RevealsState>()((set, get) => ({
   revealSpoiler: (id, media = false) => {
     set((state) => {
       if (media) {
+        if (state.spoilersMedia[id]) return state;
         return {
           spoilersMedia: { ...state.spoilersMedia, [id]: true },
         };
       }
+      if (state.spoilers[id]) return state;
       return {
         spoilers: { ...state.spoilers, [id]: true },
       };
@@ -44,11 +46,13 @@ export const useRevealsStore = create<RevealsState>()((set, get) => ({
     });
   },
   revealQuote: (id, value) => {
+    if (get().revealedQuotes[id] === value) return;
     set((state) => ({
       revealedQuotes: { ...state.revealedQuotes, [id]: value },
     }));
   },
   revealMutedPost: (id) => {
+    if (get().revealedMutedPosts[id]) return;
     set((state) => ({
       revealedMutedPosts: { ...state.revealedMutedPosts, [id]: true },
     }));

@@ -1,6 +1,4 @@
 import {
-  AppBskyEmbedRecord,
-  AppBskyEmbedRecordWithMedia,
   AppBskyFeedDefs,
   AppBskyActorDefs,
   moderatePost,
@@ -101,28 +99,6 @@ function filterLabels(
   return labels.filter((label) => accepted.has(label.src));
 }
 
-function embedCause(
-  post: AppBskyFeedDefs.PostView,
-): PostModerationDecision['cause'] | undefined {
-  const embed = post.embed;
-  if (!embed) return undefined;
-
-  const record =
-    AppBskyEmbedRecord.isView(embed) || AppBskyEmbedRecordWithMedia.isView(embed)
-      ? AppBskyEmbedRecord.isView(embed)
-        ? embed.record
-        : AppBskyEmbedRecord.isView(embed.record)
-          ? embed.record.record
-          : undefined
-      : undefined;
-
-  if (!record || typeof record !== 'object') return undefined;
-  const type = (record as { $type?: string }).$type ?? '';
-  if (type.endsWith('#viewDetached')) return 'detached';
-  if (type.endsWith('#viewNotFound')) return 'not-found';
-  return undefined;
-}
-
 function causeMatches(
   cause: ModerationDecision['causes'][number],
   candidate: PostModerationDecision['cause'],
@@ -185,7 +161,9 @@ function mapVisibility(
   return 'show';
 }
 
-function labelCause(mod: ModerationDecision): ComAtprotoLabelDefs.Label | undefined {
+function labelCause(
+  mod: ModerationDecision,
+): ComAtprotoLabelDefs.Label | undefined {
   const labelCauseEntry = mod.causes.find((cause) => cause.type === 'label');
   if (labelCauseEntry?.type === 'label') return labelCauseEntry.label;
   return undefined;
@@ -195,18 +173,6 @@ export function decidePostModeration(
   post: AppBskyFeedDefs.PostView,
   ctx: ModerationContext,
 ): PostModerationDecision {
-  const embedOnlyCause = embedCause(post);
-  if (embedOnlyCause) {
-    return {
-      visibility: embedOnlyCause === 'not-found' ? 'hide' : 'blur',
-      cause: embedOnlyCause,
-      blurAlt:
-        embedOnlyCause === 'detached'
-          ? 'Quoted post was detached'
-          : 'Quoted post not found',
-    };
-  }
-
   const mod = moderatePost(post, moderationContextToOpts(ctx));
   const labels = filterLabels(post.labels, ctx.acceptedLabelerDids);
   const contentViewUi = mod.ui('contentView');
@@ -237,9 +203,7 @@ function profileFieldBlurred(
 }
 
 export function decideProfileModeration(
-  profile:
-    | AppBskyActorDefs.ProfileView
-    | AppBskyActorDefs.ProfileViewDetailed,
+  profile: AppBskyActorDefs.ProfileView | AppBskyActorDefs.ProfileViewDetailed,
   ctx: ModerationContext,
 ): ProfileModerationDecision {
   const mod = moderateProfile(profile, moderationContextToOpts(ctx));

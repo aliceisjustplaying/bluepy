@@ -7,19 +7,22 @@ import type { ReactNode, ComponentType } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { InView as InViewUntyped } from 'react-intersection-observer';
 import { useParams } from 'react-router-dom';
-import { useSnapshot } from 'valtio';
 
 import AccountBlock from '../components/account-block';
 import Icon from '../components/icon';
 import Link from '../components/link';
 import ListAddEdit from '../components/list-add-edit';
+import ListFeed from '../components/list-feed';
 import MenuConfirm from '../components/menu-confirm';
 import MenuLink from '../components/menu-link';
 import Menu2 from '../components/menu2';
 import Modal from '../components/modal';
-import Timeline from '../components/timeline';
+import { useList } from '../data/lists';
+import {
+  isAtprotoFeedGeneratorURI,
+  maybeDecodeAtprotoURI,
+} from '../utils/atproto-route';
 import { api } from '../utils/api';
-import { filteredItems } from '../utils/filters';
 import {
   getList,
   getLists,
@@ -27,45 +30,12 @@ import {
   splitListsAndFeeds,
 } from '../utils/lists';
 import { navigatePath } from '../utils/router';
-import states, { saveStatus } from '../utils/states';
 import useTitle from '../utils/useTitle';
-
-const LIMIT = 20;
 
 interface ListLike {
   id: string;
   title: string;
   [key: string]: unknown;
-}
-
-type StatusLike = mastodon.v1.Status;
-
-interface SaveStatusPayload extends Record<string, unknown> {
-  id?: string;
-  account?: Record<string, unknown> & { id?: string };
-  reblog?: SaveStatusPayload | null;
-  quote?: SaveStatusPayload | null;
-  state?: unknown;
-  quotedStatus?: SaveStatusPayload | null;
-}
-
-function toSaveStatus(
-  status: StatusLike | null | undefined,
-): SaveStatusPayload | null | undefined {
-  return status as SaveStatusPayload | null | undefined;
-}
-
-interface FetchItemsResult {
-  done?: boolean;
-  value: (StatusLike | null | undefined)[] | undefined;
-}
-
-interface ListTimelineEndpoint {
-  $select(id: string): {
-    list(options: { limit: number; since_id?: string }): {
-      values(): AsyncIterator<StatusLike[]>;
-    } & Promise<{ value?: StatusLike[] } | StatusLike[]>;
-  };
 }
 
 interface ListMembersEndpoint {
@@ -80,8 +50,6 @@ interface ListMembersEndpoint {
   };
 }
 
-// react-intersection-observer's InView ships without working JSX
-// component typings under React component types. Re-type for our usage.
 type InViewProps = {
   as?: string;
   onChange?: (inView: boolean) => void;
@@ -98,91 +66,43 @@ interface ListProps {
 
 function List(props: ListProps) {
   const { t } = useLingui();
-  const snapStates = useSnapshot(states);
-  const { masto, instance } = api({ instance: props.instance });
   const params = useParams();
   const id = props?.id || params?.id;
   const timelineId = props?.timelineId || 'list';
-  // const navigate = useNavigate();
-  const latestItem = useRef<string | undefined>(undefined);
-  // const [reloadCount, reload] = useReducer((c) => c + 1, 0);
-
-  const timelinesApi = masto.v1.timelines as {
-    list: ListTimelineEndpoint;
-  };
-
-  const listIterator = useRef<AsyncIterator<StatusLike[]> | undefined>(
-    undefined,
-  );
-  async function fetchList(firstLoad?: boolean): Promise<FetchItemsResult> {
-    if (firstLoad || !listIterator.current) {
-      listIterator.current = timelinesApi.list
-        .$select(id ?? '')
-        .list({
-          limit: LIMIT,
-        })
-        .values();
-    }
-    const results = await listIterator.current.next();
-    const value = results.value as StatusLike[] | undefined;
-    if (value?.length) {
-      if (firstLoad) {
-        latestItem.current = value[0].id;
-      }
-
-      // value = filteredItems(value, 'home');
-      value.forEach((item) => {
-        saveStatus(toSaveStatus(item), instance);
-      });
-    }
-    return {
-      done: results.done,
-      value,
-    };
-  }
-
-  async function checkForUpdates(): Promise<boolean> {
-    try {
-      const results = await timelinesApi.list.$select(id ?? '').list({
-        limit: 1,
-        since_id: latestItem.current,
-      });
-      let value: StatusLike[] | undefined = Array.isArray(results)
-        ? results
-        : results?.value;
-      const valueContainsLatestItem = value?.[0]?.id === latestItem.current; // since_id might not be supported
-      if (value?.length && !valueContainsLatestItem) {
-        value = filteredItems(value, 'home') as StatusLike[];
-        return true;
-      }
-      return false;
-    } catch {
-      return false;
-    }
-  }
+  const listUri = maybeDecodeAtprotoURI(id) || id;
+  const isAtprotoFeed = isAtprotoFeedGeneratorURI(listUri);
+  const { data: listMeta } = useList(isAtprotoFeed ? undefined : listUri);
 
   const [lists, setLists] = useState<ListLike[]>([]);
-
   const [list, setList] = useState<ListLike>({ id: '', title: 'List' });
-  const isFeed = isFeedList(list);
+  const isFeed = isAtprotoFeed || isFeedList(list);
   const { lists: menuLists, feeds: menuFeeds } = splitListsAndFeeds(lists);
-  // const [title, setTitle] = useState(`List`);
+
   useTitle(list.title, ['/l/:id', '/:scheme://*', '/:atUri']);
+
+  useEffect(() => {
+    if (listMeta) {
+      setList({
+        id: listMeta.uri,
+        title: listMeta.name,
+      });
+    }
+  }, [listMeta]);
+
   useEffect(() => {
     void (async () => {
       try {
         const fetchedList = props.instance
-          ? await getList(id ?? '', props.instance)
-          : await getList(id ?? '');
+          ? await getList(listUri ?? '', props.instance)
+          : await getList(listUri ?? '');
         if (fetchedList) {
           setList(fetchedList);
         }
-        // setTitle(list.title);
       } catch (e) {
         console.error(e);
       }
     })();
-  }, [id, props.instance]);
+  }, [id, listUri, props.instance]);
 
   const [showListAddEditModal, setShowListAddEditModal] = useState<
     boolean | { list: ListLike }
@@ -191,26 +111,15 @@ function List(props: ListProps) {
 
   return (
     <>
-      <Timeline
+      <ListFeed
         key={id}
+        listUri={listUri}
+        isFeed={isFeed}
         title={list.title}
         id={timelineId}
-        timelineKey={`${timelineId}-${id}`}
         emptyText={t`Nothing yet.`}
         errorText={t`Unable to load posts.`}
-        instance={instance}
-        fetchItems={fetchList}
-        checkForUpdates={checkForUpdates}
-        useItemID
-        boostsCarousel={snapStates.settings.boostsCarousel}
-        // allowFilters
-        filterContext="home"
-        showReplyParent
-        // refresh={reloadCount}
         headerStart={
-          // <Link to="/l" className="button plain">
-          //   <Icon icon="list" size="l" />
-          // </Link>
           <Menu2
             overflow="auto"
             menuClassName="lists-picker-menu"
@@ -338,14 +247,12 @@ function List(props: ListProps) {
                 result.list
               ) {
                 setList(result.list);
-                // reload();
               } else if (
                 result &&
                 typeof result === 'object' &&
                 'state' in result &&
                 result.state === 'deleted'
               ) {
-                // navigate('/l');
                 navigatePath('/l');
               }
               setShowListAddEditModal(false);
@@ -382,9 +289,6 @@ interface ListManageMembersProps {
 
 function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
   const { t } = useLingui();
-  // Show list of members with [Remove] button
-  // API only returns 40 members at a time, so this need to be paginated with infinite scroll
-  // Show [Add] button after removing a member
   const { masto, instance } = api();
   const [members, setMembers] = useState<mastodon.v1.Account[]>([]);
   const [uiState, setUIState] = useState<'default' | 'loading' | 'error'>(
@@ -439,9 +343,6 @@ function ListManageMembers({ listID, onClose }: ListManageMembersProps) {
 
   useEffect(() => {
     fetchMembers(true);
-    // TODO(oxlint:react-hooks/exhaustive-deps): mount-only initial load. The
-    // fetchMembers reference is intentionally read via a ref so the effect
-    // does not retrigger when masto proxy access recreates the closure.
   }, []);
 
   return (
@@ -530,8 +431,6 @@ function RemoveAddButton({ account, listID }: RemoveAddButtonProps) {
             }
           })();
         } else {
-          // const yes = confirm(`Remove ${account.username} from this list?`);
-          // if (!yes) return;
           setUIState('loading');
 
           void (async () => {

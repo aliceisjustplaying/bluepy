@@ -2,6 +2,7 @@ import { AppBskyFeedDefs } from '@atproto/api';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { useActiveDid, useClients } from '../contexts/SessionProvider';
+import { setBookmarkOverride } from '../utils/bookmark-overrides';
 
 import { feedReadMode } from './_internal/dispatch';
 import { primePosts } from './_internal/prime';
@@ -18,16 +19,26 @@ export function useBookmarks() {
 
   return useInfiniteList<AtUri>({
     queryKey: keys.bookmarks(scope),
-    enabled: Boolean(activeDid),
+    enabled: Boolean(activeDid && clients.activeAppViewProxyAgent),
     queryFn: async ({ pageParam }) => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
       const res = await agent.app.bsky.bookmark.getBookmarks({
         limit: 30,
         cursor: pageParam,
       });
-      const posts = res.data.bookmarks.flatMap((bookmark) =>
-        AppBskyFeedDefs.isPostView(bookmark.item) ? [bookmark.item] : [],
-      );
+      const posts = res.data.bookmarks.flatMap((bookmark) => {
+        if (!AppBskyFeedDefs.isPostView(bookmark.item)) return [];
+        setBookmarkOverride(activeDid, bookmark.item.uri, true);
+        return [
+          {
+            ...bookmark.item,
+            viewer: {
+              ...bookmark.item.viewer,
+              bookmarked: true,
+            },
+          },
+        ];
+      });
       primePosts(qc, scope, { posts });
       return {
         items: posts.map((post) => post.uri),

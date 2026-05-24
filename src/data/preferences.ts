@@ -34,7 +34,7 @@ export function usePreferences(): {
 
   const query = useQuery({
     queryKey: accountScope ? keys.preferences(accountScope) : ['preferences', 'disabled'],
-    enabled: Boolean(accountScope && activeDid),
+    enabled: Boolean(accountScope && activeDid && clients.activeAppViewProxyAgent),
     staleTime: Number.POSITIVE_INFINITY,
     queryFn: async () => {
       const agent = getReadAgent(

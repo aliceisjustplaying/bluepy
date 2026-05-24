@@ -35,6 +35,9 @@ import RawHtml from '../components/raw-html';
 import StatusComponent, {
   type StatusComponentProps,
 } from '../components/status';
+import { useActiveDid, useClients } from '../contexts/SessionProvider';
+import { feedReadMode } from '../data/_internal/dispatch';
+import { getReadAgent } from '../data/clients';
 import { api } from '../utils/api';
 import enhanceContent from '../utils/enhance-content';
 import FilterContext from '../utils/filter-context';
@@ -48,7 +51,10 @@ import niceDateTime from '../utils/nice-date-time';
 import shortenNumber from '../utils/shorten-number';
 import showToast from '../utils/show-toast';
 import states, { saveStatus } from '../utils/states';
-import { getCurrentInstance } from '../utils/store-utils';
+import {
+  getAccountByAccessToken,
+  getCurrentInstance,
+} from '../utils/store-utils';
 import usePageVisibility from '../utils/usePageVisibility';
 import useScroll from '../utils/useScroll';
 import useTitle from '../utils/useTitle';
@@ -247,12 +253,16 @@ function Notifications({ columnMode }: NotificationsProps) {
   const _ = i18n._.bind(i18n);
   useTitle(t`Notifications`, '/notifications');
   const { masto, instance } = api();
+  const activeDid = useActiveDid();
+  const clients = useClients();
   const snapStates = useSnapshot(states);
   const [uiState, setUIState] = useState('default');
   const [routerSearchParams] = useSearchParams();
   const searchParams = columnMode ? emptySearchParams : routerSearchParams;
-  const notificationID = searchParams.get('id');
-  const notificationAccessToken = searchParams.get('access_token');
+  const notificationID =
+    searchParams.get('notification_id') || searchParams.get('id');
+  const notificationAccountID = searchParams.get('account_id');
+  const legacyNotificationAccessToken = searchParams.get('access_token');
   const [showMore, setShowMore] = useState(false);
   const [onlyMentions, setOnlyMentions] = useState(false);
   const [showMentionsLink, setShowMentionsLink] = useState(false);
@@ -346,19 +356,19 @@ function Notifications({ columnMode }: NotificationsProps) {
         states.notificationsLast = groupedNotifications[0];
         states.notifications = groupedNotifications;
 
-        // Update last read marker
-        const markers = masto.v1.markers as {
-          create(opts: {
-            notifications: { lastReadId: string | undefined };
-          }): Promise<unknown>;
-        };
-        markers
-          .create({
-            notifications: {
-              lastReadId: groupedNotifications[0].id,
-            },
-          })
-          .catch(() => {});
+        if (activeDid && clients.activeAppViewProxyAgent) {
+          try {
+            const agent = getReadAgent(clients, feedReadMode(activeDid));
+            void agent.app.bsky.notification.updateSeen({
+              seenAt: new Date().toISOString(),
+            });
+          } catch (seenError) {
+            console.warn(
+              'Failed to update notification seen marker',
+              seenError,
+            );
+          }
+        }
 
         if (!columnMode) analyzeNotifications(groupedNotifications);
       } else {
@@ -633,15 +643,22 @@ function Notifications({ columnMode }: NotificationsProps) {
 
   const syncRouteNotification = useEffectEvent(() => {
     if (notificationID) {
+      let legacyAccountId: string | undefined;
+      try {
+        legacyAccountId = legacyNotificationAccessToken
+          ? getAccountByAccessToken(atob(legacyNotificationAccessToken))?.info
+              .id
+          : undefined;
+      } catch {}
       states.routeNotification = {
         id: notificationID,
-        accessToken: atob(notificationAccessToken as string),
+        accountId: notificationAccountID ?? legacyAccountId,
       };
     }
   });
   useEffect(() => {
     syncRouteNotification();
-  }, [notificationID, notificationAccessToken]);
+  }, [notificationID, notificationAccountID, legacyNotificationAccessToken]);
 
   // useEffect(() => {
   //   if (uiState === 'default') {
@@ -815,6 +832,7 @@ function Notifications({ columnMode }: NotificationsProps) {
     <div
       id="notifications-page"
       className="deck-container"
+      data-timeline-id="notifications"
       ref={(node) => {
         scrollableRef.current = node;
         jRef.current = node;
@@ -1042,6 +1060,7 @@ function Notifications({ columnMode }: NotificationsProps) {
             ) : (
               <label>
                 <input
+                  aria-label={t`Only mentions`}
                   type="checkbox"
                   checked={onlyMentions}
                   onChange={(e: SyntheticEvent<HTMLInputElement>) => {
@@ -1241,6 +1260,7 @@ function Notifications({ columnMode }: NotificationsProps) {
                         <label>
                           {_(NOTIFICATIONS_POLICIES_TEXT[key])}
                           <select
+                            aria-label={_(NOTIFICATIONS_POLICIES_TEXT[key])}
                             name={key}
                             defaultValue={value}
                             className="small"

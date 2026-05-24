@@ -34,6 +34,7 @@ import { getSafeViewTransitionName } from '../components/media';
 import MediaModal from '../components/media-modal';
 import Menu2 from '../components/menu2';
 import NameText from '../components/name-text';
+import PostThreadPage from '../components/post-thread-page';
 import RelativeTime from '../components/relative-time';
 import Status from '../components/status';
 import type { AnyStatus } from '../components/status-types';
@@ -42,6 +43,7 @@ import {
   getAtprotoURIFromPathname,
   isAtprotoPostURI,
   isStatusPath,
+  maybeDecodeAtprotoURI,
 } from '../utils/atproto-route';
 import htmlContentLength from '../utils/html-content-length';
 import { navigatePath } from '../utils/router';
@@ -196,6 +198,17 @@ function threadifyRawStatus(status: RawStatus, instance?: string | null): void {
   threadifyStatus(status as ThreadifyStatusInput, instance);
 }
 
+function safeInternalPath(value: string | null | undefined): string | null {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return null;
+  try {
+    const url = new URL(value, window.location.origin);
+    if (url.origin !== window.location.origin) return null;
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return null;
+  }
+}
+
 interface StatusPageParams {
   id: string;
   instance?: string;
@@ -203,24 +216,25 @@ interface StatusPageParams {
 
 function StatusPage(params: StatusPageParams) {
   const { id } = params;
-  const { masto, instance } = api({ instance: params.instance });
-  const snapStates = useSnapshot(states);
   const [searchParams, setSearchParams] = useSearchParams();
   const mediaParam = searchParams.get('media');
   const mediaOnlyParam = searchParams.get('media-only');
   const mediaIndex = parseInt((mediaParam || mediaOnlyParam) as string, 10);
   let showMedia = mediaIndex > 0;
+  const showMediaOnly = showMedia && !!mediaOnlyParam;
+  const postUri = maybeDecodeAtprotoURI(id);
+  const useDataLayerThread =
+    isAtprotoPostURI(postUri) && !showMedia && !showMediaOnly;
+
+  const { masto, instance } = api({ instance: params.instance });
+  const snapStates = useSnapshot(states);
   const mediaStatusID = searchParams.get('mediaStatusID');
   const mediaStatus = getStatus(mediaStatusID, instance);
   if (mediaStatusID && !mediaStatus) {
     showMedia = false;
   }
-  const showMediaOnly = showMedia && !!mediaOnlyParam;
 
-  // `id` is always present on this route, so `statusKey` always returns a
-  // string here. Fall back to `id` defensively for the type system.
-  // `id` is always present on this route, so `statusKey` always returns a
-  // string here. Fall back to `id` defensively for the type system.
+  // `id` is always present on this route
   const sKey: string = statusKey(id, instance) ?? id;
   const [heroStatus, setHeroStatus] = useState<RawStatus | undefined>(
     rawStatusFromState(states.statuses[sKey]),
@@ -262,7 +276,13 @@ function StatusPage(params: StatusPageParams) {
   }, [heroStatus]);
 
   const closeLink = useMemo(() => {
-    const { prevLocation } = states;
+    const { prevLocation } = snapStates;
+    const lastFeedPath = safeInternalPath(
+      window.sessionStorage.getItem('bluepy:last-feed-path'),
+    );
+    const fromParam = searchParams.get('from');
+    const safeFromParam = safeInternalPath(fromParam);
+    if (safeFromParam) return safeFromParam;
     const prevPathname = prevLocation?.pathname || '';
     const prevSearch = prevLocation?.search;
     const prevSearchStr = typeof prevSearch === 'string' ? prevSearch : '';
@@ -272,11 +292,14 @@ function StatusPage(params: StatusPageParams) {
       matchPath('/:instance/s/:id', prevPathname) ||
       matchPath('/s/:id', prevPathname) ||
       isAtprotoPostURI(atprotoURI);
-    if (!pathname || matchStatusPath) {
-      return '/';
+    if (!pathname) {
+      return lastFeedPath || '/';
+    }
+    if (matchStatusPath) {
+      return lastFeedPath || '/';
     }
     return pathname;
-  }, []);
+  }, [searchParams, snapStates.prevLocation]);
 
   // Latest-value refs so the media-only fetch effect can guard on the
   // current hero status (without re-running on every status mutation) and
@@ -334,7 +357,11 @@ function StatusPage(params: StatusPageParams) {
       postViewState: postViewState(),
       showMediaOnly,
     });
-    if (postViewState() === 'small' && snapStates.prevLocation) {
+    if (
+      !showMediaOnly &&
+      postViewState() === 'small' &&
+      snapStates.prevLocation
+    ) {
       history.back();
     } else {
       if (showMediaOnly) {
@@ -459,6 +486,16 @@ function StatusPage(params: StatusPageParams) {
     };
   }, []);
 
+  if (useDataLayerThread && postUri) {
+    return (
+      <PostThreadPage
+        uri={postUri}
+        closeLink={closeLink}
+        instance={params.instance ?? 'bsky.social'}
+      />
+    );
+  }
+
   return (
     <div className="deck-backdrop">
       {showMedia ? (
@@ -517,6 +554,20 @@ function createdAtSort(
   b: { createdAt?: string | null },
 ): number {
   return Date.parse(a.createdAt ?? '') - Date.parse(b.createdAt ?? '');
+}
+
+function formatTimeGap(months: number): string {
+  if (months < 12) {
+    return plural(months, {
+      one: '# month later',
+      other: '# months later',
+    });
+  }
+  const years = Math.floor(months / 12);
+  return plural(years, {
+    one: '# year later',
+    other: '# years later',
+  });
 }
 
 const MONTH_IN_MS = 1000 * 60 * 60 * 24 * 30;
@@ -1586,22 +1637,6 @@ function StatusThread({
     statuses.forEach(getIDs);
     return ids.map((sId) => statusKey(sId, instance));
   }, [statuses, instance]);
-
-  // Helper function to format time differences between two dates
-  function formatTimeGap(months: number): string {
-    if (months < 12) {
-      return plural(months, {
-        one: '# month later',
-        other: '# months later',
-      });
-    } else {
-      const years = Math.floor(months / 12);
-      return plural(years, {
-        one: '# year later',
-        other: '# years later',
-      });
-    }
-  }
 
   const statusesList = useMemo(() => {
     const result = [];

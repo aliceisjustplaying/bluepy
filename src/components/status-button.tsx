@@ -1,6 +1,8 @@
 import type { ButtonHTMLAttributes, Ref } from 'react';
+import { useSnapshot } from 'valtio';
 
 import shortenNumber from '../utils/shorten-number';
+import states from '../utils/states';
 
 import Icon from './icon';
 
@@ -21,6 +23,7 @@ interface StatusButtonProps extends Omit<
 }
 
 function StatusButton(props: StatusButtonProps) {
+  const snapStates = useSnapshot(states);
   let {
     ref,
     checked,
@@ -59,6 +62,11 @@ function StatusButton(props: StatusButtonProps) {
     <button
       ref={ref}
       {...otherProps}
+      aria-hidden={
+        snapStates.showCompose && buttonClassName.includes('reply-button')
+          ? true
+          : otherProps['aria-hidden']
+      }
       type={type}
       title={buttonTitle}
       className={buttonClassName}

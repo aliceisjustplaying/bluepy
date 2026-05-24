@@ -2,7 +2,7 @@ import type { AppBskyNotificationListNotifications } from '@atproto/api';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useActiveDid, useClients } from '../contexts/SessionProvider';
-import { notificationStatusURI } from '../utils/atproto-adapter';
+import { notificationPostUri } from './_internal/notification-post-uri';
 
 import { feedReadMode } from './_internal/dispatch';
 import { primePosts, primeProfiles } from './_internal/prime';
@@ -14,6 +14,16 @@ import { useViewerScope } from './scope';
 export type NotificationItem =
   AppBskyNotificationListNotifications.Notification;
 
+const GET_POSTS_LIMIT = 25;
+
+function chunks<T>(items: readonly T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    result.push(items.slice(i, i + size));
+  }
+  return result;
+}
+
 export function useNotifications(filter?: NotifFilter) {
   const clients = useClients();
   const scope = useViewerScope();
@@ -22,13 +32,15 @@ export function useNotifications(filter?: NotifFilter) {
 
   return useInfiniteList<NotificationItem>({
     queryKey: keys.notifications(scope, filter),
-    enabled: Boolean(activeDid),
+    enabled: Boolean(activeDid && clients.activeAppViewProxyAgent),
     queryFn: async ({ pageParam }) => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
       const res = await agent.listNotifications({
         limit: 30,
         cursor: pageParam,
-        ...(filter ? { reasons: [filter] } : {}),
+        ...(filter
+          ? { reasons: Array.isArray(filter) ? [...filter] : [filter] }
+          : {}),
       });
       primeProfiles(qc, scope, {
         actors: res.data.notifications.map((n) => n.author),
@@ -36,7 +48,7 @@ export function useNotifications(filter?: NotifFilter) {
       const postUris = [
         ...new Set(
           res.data.notifications
-            .map((notification) => notificationStatusURI(notification))
+            .map((notification) => notificationPostUri(notification))
             .filter(
               (uri): uri is string =>
                 Boolean(uri?.includes('/app.bsky.feed.post/')),
@@ -44,8 +56,10 @@ export function useNotifications(filter?: NotifFilter) {
         ),
       ];
       if (postUris.length > 0) {
-        const posts = await agent.getPosts({ uris: postUris });
-        primePosts(qc, scope, posts.data);
+        for (const batch of chunks(postUris, GET_POSTS_LIMIT)) {
+          const posts = await agent.getPosts({ uris: batch });
+          primePosts(qc, scope, posts.data);
+        }
       }
       return {
         items: res.data.notifications,
@@ -66,7 +80,7 @@ export function useUnreadNotificationCount(): {
 
   const query = useQuery({
     queryKey: [...scope, 'notificationUnread'] as const,
-    enabled: Boolean(activeDid),
+    enabled: Boolean(activeDid && clients.activeAppViewProxyAgent),
     staleTime: 30_000,
     queryFn: async () => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));

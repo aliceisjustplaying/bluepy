@@ -120,6 +120,7 @@ export default function StatusContent({
   const sameInstance = instance === currentInstance;
   const snapStates = useSnapshot(states);
   const sKey = resolvedSKey;
+  const liveStatus = (snapStates.statuses[sKey] as AnyStatus | undefined) || status;
 
   const {
     account,
@@ -155,7 +156,9 @@ export default function StatusContent({
     _deleted,
     _pinned,
     // _filtered,
-  } = status;
+  } = liveStatus;
+  const statusDataHref =
+    typeof _uri === 'string' && isAtprotoPostURI(_uri) ? `/${_uri}` : undefined;
   const {
     acct,
     avatar,
@@ -474,6 +477,7 @@ export default function StatusContent({
       )}
       <article
         data-state-post-id={sKey}
+        data-href={statusDataHref}
         ref={(node: HTMLElement | null) => {
           statusRef.current = node;
           // Use parent node if it's in focus
@@ -591,7 +595,7 @@ export default function StatusContent({
               e.preventDefault();
               e.stopPropagation();
               states.showAccount = {
-                account: status.account,
+                account,
                 instance,
               };
             }}

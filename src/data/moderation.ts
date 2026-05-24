@@ -63,7 +63,9 @@ export function useModerationContext(): ModerationContext {
 
   const labelerQuery = useQuery({
     queryKey: ['labelers', acceptedLabelerDids],
-    enabled: acceptedLabelerDids.length > 0,
+    enabled:
+      acceptedLabelerDids.length > 0 &&
+      (activeDid ? Boolean(clients.activeAppViewProxyAgent) : true),
     staleTime: 60_000,
     queryFn: async () => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));

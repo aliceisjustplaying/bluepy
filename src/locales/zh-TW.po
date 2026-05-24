@@ -79,6 +79,10 @@ msgstr ""
 #~ msgid "Ask a question"
 #~ msgstr "詢問問題"
 
+#: src/components/notifications-feed.tsx
+msgid "replied to you"
+msgstr ""
+
 #: src/components/report-modal.tsx
 msgid "Other"
 msgstr ""
@@ -182,7 +186,7 @@ msgstr ""
 msgid "anyone"
 msgstr ""
 
-#: src/pages/account-statuses.tsx
+#: src/components/search-data-results.tsx
 #: src/pages/search.tsx
 msgid "Posts"
 msgstr "嘟文"
@@ -427,6 +431,7 @@ msgstr ""
 #: src/components/generic-accounts.tsx
 #: src/components/quote-chain-modal.tsx
 #: src/components/quotes-modal.tsx
+#: src/components/search-data-results.tsx
 #: src/components/timeline.tsx
 #: src/components/timeline2.tsx
 #: src/pages/search.tsx
@@ -472,6 +477,10 @@ msgstr ""
 #~ msgid "{0, plural, one {# hashtag} other {# hashtags}}"
 #~ msgstr ""
 
+#: src/components/notifications-feed.tsx
+msgid "verified you"
+msgstr ""
+
 #: src/components/report-modal.tsx
 msgid "Pending review"
 msgstr "等待審核中"
@@ -480,6 +489,7 @@ msgstr "等待審核中"
 #~ msgid "Continue with {selectedInstanceText}"
 #~ msgstr ""
 
+#: src/components/timeline-feed.tsx
 #: src/components/timeline.tsx
 #: src/pages/settings.tsx
 msgid "New posts"
@@ -531,9 +541,14 @@ msgstr ""
 #~ msgid "Quote settings updated"
 #~ msgstr ""
 
+#: src/pages/account-statuses.tsx
 #: src/pages/year-in-posts.tsx
 msgid "Year"
 msgstr ""
+
+#: src/pages/catchup.tsx
+#~ msgid "h"
+#~ msgstr ""
 
 #: src/pages/accounts.tsx
 msgid "Switch to this account"
@@ -763,6 +778,10 @@ msgstr ""
 msgid "Push notifications are blocked. Please enable them in your browser settings."
 msgstr ""
 
+#: src/components/account-info.tsx
+msgid "Loading post stats..."
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "Append to current shortcuts?"
 msgstr ""
@@ -862,8 +881,7 @@ msgstr "互相關注"
 msgid "Report post…"
 msgstr ""
 
-#: src/pages/following.tsx
-#: src/pages/following2.tsx
+#: src/components/timeline-feed.tsx
 #: src/pages/list.tsx
 msgid "Unable to load posts."
 msgstr ""
@@ -1017,6 +1035,10 @@ msgstr ""
 msgid "Image description generator"
 msgstr ""
 
+#: src/components/notifications-feed.tsx
+msgid "liked your repost"
+msgstr ""
+
 #: src/pages/hashtag.jsx
 #~ msgid "Featured on profile"
 #~ msgstr ""
@@ -1033,6 +1055,10 @@ msgstr "機器人"
 
 #: src/pages/trending.jsx
 #~ msgid "Trending News"
+#~ msgstr ""
+
+#: src/pages/catchup.tsx
+#~ msgid "Enter"
 #~ msgstr ""
 
 #: src/components/keyboard-shortcuts-help.tsx
@@ -1090,6 +1116,10 @@ msgstr ""
 #. placeholder {0}: accounts.length
 #: src/components/import-export-accounts.tsx
 msgid "{0, plural, one {# account} other {# accounts}}"
+msgstr ""
+
+#: src/components/notifications-feed.tsx
+msgid "reposted your repost"
 msgstr ""
 
 #: src/components/account-info.tsx
@@ -1214,6 +1244,8 @@ msgstr ""
 msgid "<0/> <1>reposted</1>"
 msgstr ""
 
+#: src/components/moderation-gate.tsx
+#: src/components/profile-moderation-gate.tsx
 #: src/components/status-quotes.tsx
 msgid "Show anyway"
 msgstr ""
@@ -1320,6 +1352,7 @@ msgstr "已複製 HTML 語法"
 #~ msgid "Filtered post will be…"
 #~ msgstr ""
 
+#: src/components/search-data-results.tsx
 #: src/pages/search.tsx
 msgid "See more accounts"
 msgstr ""
@@ -1339,6 +1372,7 @@ msgstr ""
 
 #: src/components/generic-accounts.tsx
 #: src/components/notification.tsx
+#: src/components/search-data-results.tsx
 #: src/pages/accounts.tsx
 #: src/pages/search.tsx
 msgid "Accounts"
@@ -1372,6 +1406,10 @@ msgstr ""
 #: src/components/related-actions.tsx
 msgid "Reposts from @{username} disabled."
 msgstr ""
+
+#: src/pages/catchup.tsx
+#~ msgid "k"
+#~ msgstr ""
 
 #: src/components/account-info.tsx
 msgid "Go to original profile page"
@@ -1783,6 +1821,10 @@ msgstr ""
 #~ msgid "Search emoji"
 #~ msgstr "搜尋表情符號"
 
+#: src/components/profile-moderation-gate.tsx
+msgid "Profile hidden by moderation settings"
+msgstr ""
+
 #: src/pages/notifications.tsx
 msgid "Today"
 msgstr ""
@@ -1977,6 +2019,7 @@ msgstr ""
 #. js-lingui-explicit-id
 #: src/components/nav-menu.tsx
 #: src/components/shortcuts-settings.tsx
+#: src/components/timeline-feed.tsx
 #: src/pages/following.tsx
 #: src/pages/following2.tsx
 msgid "following.title"
@@ -2242,6 +2285,10 @@ msgstr ""
 msgid "You have unsaved changes. Discard this post?"
 msgstr "您尚未儲存變更，是否丟棄這則貼文？"
 
+#: src/pages/catchup.tsx
+msgid "All posts"
+msgstr ""
+
 #: src/pages/account-statuses.jsx
 #~ msgid "{accountDisplay} (+ Replies)"
 #~ msgstr ""
@@ -2266,6 +2313,7 @@ msgstr "下一個"
 msgid "Create"
 msgstr "建立"
 
+#: src/components/search-data-results.tsx
 #: src/pages/search.tsx
 msgid "No posts found."
 msgstr ""
@@ -2276,6 +2324,7 @@ msgstr ""
 
 #: src/components/columns.tsx
 #: src/components/nav-menu.tsx
+#: src/components/post-uri-feed.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/components/timeline.tsx
 #: src/components/timeline2.tsx
@@ -2328,6 +2377,7 @@ msgid "{account} published a post."
 msgstr ""
 
 #: src/components/nav-menu.tsx
+#: src/components/notifications-feed.tsx
 #: src/components/shortcuts-settings.tsx
 #: src/pages/home.tsx
 #: src/pages/list.tsx
@@ -2439,6 +2489,8 @@ msgid "Cloak mode enabled"
 msgstr "已啟用隱藏模式"
 
 #. placeholder {0}: fItems.length
+#. placeholder {0}: items.length
+#: src/components/post-uri-feed.tsx
 #: src/components/timeline.tsx
 msgid "{0, plural, one {# Repost} other {# Reposts}}"
 msgstr ""
@@ -2606,7 +2658,6 @@ msgstr ""
 #: src/components/account-info.tsx
 #: src/components/timeline.tsx
 #: src/components/timeline2.tsx
-#: src/pages/home.tsx
 #: src/pages/notifications.tsx
 #: src/pages/status.tsx
 msgid "Try again"
@@ -2827,6 +2878,7 @@ msgstr ""
 msgid "Cloak mode <0>(<1>Text</1> → <2>████</2>)</0>"
 msgstr "隱藏模式 <0>(<1>文字</1> → <2>██</2>)</0>"
 
+#: src/components/search-data-results.tsx
 #: src/pages/search.tsx
 msgid "See more posts"
 msgstr ""
@@ -2874,6 +2926,10 @@ msgstr ""
 #: src/compose.tsx
 msgid "You may close this page now."
 msgstr ""
+
+#: src/pages/catchup.tsx
+#~ msgid "l"
+#~ msgstr ""
 
 #: src/components/search-form.tsx
 msgid "Posts tagged with <0>{hashtag}</0>"
@@ -2924,6 +2980,10 @@ msgstr "影片說明"
 #: src/components/compose.tsx
 msgid "Some media have no descriptions. Continue?"
 msgstr "有些媒體檔沒有描述。要繼續嗎？"
+
+#: src/components/notifications-feed.tsx
+msgid "reposted your post"
+msgstr ""
 
 #: src/components/list-add-edit.jsx
 #~ msgid "Show replies to people I follow"
@@ -3022,6 +3082,10 @@ msgstr ""
 msgid "Keep as link"
 msgstr "保留為連結"
 
+#: src/components/search-data-results.tsx
+msgid "Unable to load search results."
+msgstr ""
+
 #: src/pages/status.tsx
 msgid "Go to main post"
 msgstr ""
@@ -3042,8 +3106,9 @@ msgstr ""
 msgid "Failed to unwrap quote chain"
 msgstr ""
 
-#: src/pages/following.tsx
-#: src/pages/following2.tsx
+#: src/components/notifications-feed.tsx
+#: src/components/post-uri-feed.tsx
+#: src/components/timeline-feed.tsx
 msgid "Nothing to see here."
 msgstr ""
 
@@ -3090,11 +3155,19 @@ msgstr ""
 msgid "Notifications from muted accounts are always hidden."
 msgstr ""
 
+#: src/pages/catchup.tsx
+#~ msgid "j"
+#~ msgstr ""
+
 #. Relative time in hours, as short as possible
 #. placeholder {0}: Math.floor(seconds / hour)
 #: src/components/relative-time.tsx
 msgid "{0}h"
 msgstr "{0}小時"
+
+#: src/pages/catchup.tsx
+#~ msgid "Period"
+#~ msgstr ""
 
 #: src/components/post-embed-modal.tsx
 msgid "Media attachments can be images, videos, audios or any file types."
@@ -3142,6 +3215,10 @@ msgstr ""
 msgid "Generate description…"
 msgstr "產生描述中…"
 
+#: src/pages/home.tsx
+msgid "No notifications yet."
+msgstr ""
+
 #: src/components/shortcuts-settings.tsx
 msgid "No new shortcuts to import"
 msgstr ""
@@ -3152,6 +3229,14 @@ msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Filter"
+msgstr ""
+
+#: src/components/notifications-feed.tsx
+msgid "quoted your post"
+msgstr ""
+
+#: src/components/search-data-results.tsx
+msgid "Search: {query} (Posts)"
 msgstr ""
 
 #: src/pages/notifications.tsx
@@ -3401,6 +3486,7 @@ msgid "Unable to block {username}"
 msgstr ""
 
 #. js-lingui-explicit-id
+#: src/components/post-thread-page.tsx
 #: src/pages/status.tsx
 msgid "post.title"
 msgstr ""
@@ -3555,6 +3641,11 @@ msgstr "撰寫"
 #~ msgid "Show featured profiles"
 #~ msgstr ""
 
+#: src/components/notifications-feed.tsx
+#: src/components/post-uri-feed.tsx
+msgid "That's all for now."
+msgstr ""
+
 #: src/pages/filters.jsx
 #~ msgid "Never"
 #~ msgstr ""
@@ -3579,6 +3670,10 @@ msgstr ""
 #: src/components/related-actions.tsx
 msgid "Report <0>@{username}</0>…"
 msgstr "檢舉 <0>@{username}</0>…"
+
+#: src/components/notifications-feed.tsx
+msgid "removed your verification"
+msgstr ""
 
 #: src/pages/settings.tsx
 msgid "Disable all animations"
@@ -3749,6 +3844,10 @@ msgstr ""
 #~ msgid "{mentionsCount, plural, other {# mentions}}"
 #~ msgstr ""
 
+#: src/components/notifications-feed.tsx
+msgid "mentioned you"
+msgstr ""
+
 #: src/pages/status.jsx
 #~ msgid "Switch to post's server"
 #~ msgstr ""
@@ -3767,6 +3866,10 @@ msgstr ""
 
 #: src/components/atproto-labels.tsx
 msgid "Explicit or potentially disturbing media."
+msgstr ""
+
+#: src/components/moderation-gate.tsx
+msgid "Content hidden by moderation settings"
 msgstr ""
 
 #: src/components/media-attachment.tsx
@@ -4182,6 +4285,7 @@ msgstr ""
 
 #: src/components/generic-accounts.tsx
 #: src/components/quotes-modal.tsx
+#: src/components/search-data-results.tsx
 #: src/components/timeline.tsx
 #: src/pages/list.tsx
 #: src/pages/notifications.tsx
@@ -4318,6 +4422,10 @@ msgstr ""
 msgid "beyond 12 hours"
 msgstr ""
 
+#: src/components/post-uri-feed.tsx
+msgid "Reposted by <0>{handle}</0>"
+msgstr ""
+
 #: src/pages/filters.jsx
 #~ msgid "Profiles"
 #~ msgstr ""
@@ -4408,6 +4516,10 @@ msgstr ""
 
 #: src/pages/notifications.tsx
 msgid "Filter out notifications from people:"
+msgstr ""
+
+#: src/components/notifications-feed.tsx
+msgid "posted"
 msgstr ""
 
 #: src/pages/settings.tsx
@@ -4514,6 +4626,10 @@ msgstr ""
 #~ msgid "Showing {selectedFilterCategory, select, all {all posts} original {original posts} replies {replies} boosts {boosts} quotes {quotes} followedTags {followed tags} groups {groups} filtered {filtered posts}}, {sortBy, select, createdAt {{sortOrder, select, asc {oldest} desc {latest}}} reblogsCount {{sortOrder, select, asc {fewest boosts} desc {most boosts}}} favouritesCount {{sortOrder, select, asc {fewest likes} desc {most likes}}} repliesCount {{sortOrder, select, asc {fewest replies} desc {most replies}}} density {{sortOrder, select, asc {least dense} desc {most dense}}}} first{groupBy, select, account {, grouped by authors} other {}}"
 #~ msgstr ""
 
+#: src/components/notifications-feed.tsx
+msgid "joined your starter pack"
+msgstr ""
+
 #: src/components/notification.tsx
 msgid "Lost connections with <0>{name}</0>."
 msgstr "與 <0>{name}</0> 失去連線"
@@ -4544,6 +4660,10 @@ msgstr ""
 msgid "Specific list is optional."
 msgstr ""
 
+#: src/components/notifications-feed.tsx
+msgid "joined from your contacts"
+msgstr ""
+
 #: src/components/drafts.tsx
 #: src/pages/account-statuses.tsx
 msgid "Media"
@@ -4559,6 +4679,10 @@ msgstr ""
 
 #: src/components/feedback-modal.tsx
 msgid "email or Bluesky handle"
+msgstr ""
+
+#: src/components/post-thread-page.tsx
+msgid "Post"
 msgstr ""
 
 #: src/components/report-modal.tsx
@@ -4590,9 +4714,17 @@ msgstr ""
 #~ msgid "New filter"
 #~ msgstr ""
 
+#: src/pages/notifications.tsx
+#~ msgid "Unable to load notifications."
+#~ msgstr ""
+
 #: src/components/status.jsx
 #~ msgid "Quote removed"
 #~ msgstr ""
+
+#: src/components/notifications-feed.tsx
+msgid "followed you"
+msgstr ""
 
 #: src/components/status.jsx
 #~ msgid "Quote with link"
@@ -4664,8 +4796,13 @@ msgstr "已請求"
 msgid "Post unpinned from profile"
 msgstr "貼文已從個人檔案取消釘選"
 
+#: src/components/search-data-results.tsx
 #: src/pages/search.tsx
 msgid "No accounts found."
+msgstr ""
+
+#: src/components/notifications-feed.tsx
+msgid "liked your post"
 msgstr ""
 
 #: src/pages/accounts.jsx
@@ -4697,6 +4834,7 @@ msgstr "全部清除"
 #: src/components/notification-service.tsx
 #: src/components/open-link-sheet.tsx
 #: src/components/post-embed-modal.tsx
+#: src/components/post-thread-page.tsx
 #: src/components/qr-code-modal.tsx
 #: src/components/qr-scanner-modal.tsx
 #: src/components/quote-chain-modal.tsx
@@ -4765,6 +4903,10 @@ msgstr "已複製用戶名"
 #~ msgid "<0/> <1/> boosted"
 #~ msgstr ""
 
+#: src/pages/catchup.tsx
+msgid "Catch-up range"
+msgstr ""
+
 #: src/pages/welcome.jsx
 #~ msgid "Log in with Mastodon"
 #~ msgstr ""
@@ -4792,6 +4934,10 @@ msgstr ""
 #: src/components/account-info.tsx
 msgid "View profile header"
 msgstr "查看個人資料標題"
+
+#: src/components/notifications-feed.tsx
+msgid "Sign in to view notifications."
+msgstr ""
 
 #: src/pages/login.jsx
 #~ msgid "Failed to register application"

@@ -4,6 +4,7 @@ import {
   type BrowserOAuthClientOptions,
   type OAuthSession,
 } from '@atproto/oauth-client-browser';
+import { buildAtprotoLoopbackClientMetadata } from '@atproto/oauth-types';
 
 import { BSKY_PDS } from './atproto-login-service';
 
@@ -51,6 +52,38 @@ function isLoopbackOrigin(origin: string = location.origin): boolean {
   }
 }
 
+export function localhostToLoopbackHref(
+  href: string = location.href,
+): string | null {
+  try {
+    const url = new URL(href);
+    if (url.protocol !== 'http:' || url.hostname !== 'localhost') return null;
+    url.hostname = '127.0.0.1';
+    return url.href;
+  } catch {
+    return null;
+  }
+}
+
+export function redirectLocalhostToLoopback(): boolean {
+  const loopbackHref = localhostToLoopbackHref();
+  if (!loopbackHref) return false;
+  location.replace(loopbackHref);
+  return true;
+}
+
+function buildLoopbackMetadata(
+  origin: string,
+): NonNullable<BrowserOAuthClientOptions['clientMetadata']> {
+  const url = new URL(origin);
+  const hostname = url.hostname === 'localhost' ? '127.0.0.1' : url.hostname;
+  const redirectUri = `${url.protocol}//${hostname}${url.port ? `:${url.port}` : ''}/`;
+  return buildAtprotoLoopbackClientMetadata({
+    scope: ATPROTO_OAUTH_SCOPE,
+    redirect_uris: [redirectUri],
+  });
+}
+
 export function getAtprotoOAuthClientOptions(
   origin: string = location.origin,
 ): BrowserOAuthClientOptions {
@@ -58,7 +91,7 @@ export function getAtprotoOAuthClientOptions(
     handleResolver: BSKY_PDS,
     responseMode: 'query',
     clientMetadata: isLoopbackOrigin(origin)
-      ? undefined
+      ? buildLoopbackMetadata(origin)
       : buildClientMetadata(origin),
   };
 }
@@ -97,9 +130,6 @@ export function parseAtprotoOAuthAccessToken(
 }
 
 async function getAtprotoOAuthClient(): Promise<BrowserOAuthClient> {
-  if (window.__BLUEPY_OAUTH_TEST_CLIENT__) {
-    return window.__BLUEPY_OAUTH_TEST_CLIENT__ as BrowserOAuthClient;
-  }
   if (!oauthClientPromise) {
     oauthClientPromise = Promise.resolve(
       new BrowserOAuthClient(getAtprotoOAuthClientOptions()),
@@ -152,6 +182,9 @@ export function createAtprotoOAuthAgent(
 export async function startAtprotoOAuthLogin(
   input: string,
 ): Promise<OAuthSession> {
+  if (redirectLocalhostToLoopback()) {
+    throw new Error('Redirecting to loopback IP for OAuth');
+  }
   const client = await getAtprotoOAuthClient();
   return client.signIn(input, {
     scope: ATPROTO_OAUTH_SCOPE,

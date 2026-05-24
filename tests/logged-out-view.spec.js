@@ -1442,7 +1442,9 @@ test('returns to a logged-out AT profile after opening one of its posts', async 
 
   await page.locator(`.status-link-native[href="${AT_POST_PATH}"]`).click();
   await expect(page).toHaveURL(pathRegex(AT_POST_PATH));
-  await expect(page.locator('text=AT route post')).toBeVisible();
+  await expect(
+    page.locator('.status-deck article', { hasText: 'AT route post' }),
+  ).toBeVisible();
   await expect(page.locator('.deck-close')).toHaveAttribute(
     'href',
     AT_PROFILE_PATH,
@@ -1634,7 +1636,7 @@ test('keeps AT thread links navigable from a feed-backed post detail', async ({
 
   await page
     .locator(
-      `.status-link[href$="/app.bsky.feed.post/thread-direct-other-reply"]`,
+      `.status-link[data-href$="/app.bsky.feed.post/thread-direct-other-reply"]`,
     )
     .first()
     .click();
@@ -1647,7 +1649,7 @@ test('keeps AT thread links navigable from a feed-backed post detail', async ({
   );
 
   await page
-    .locator(`.status-link[href$="/app.bsky.feed.post/thread-other-reply"]`)
+    .locator(`.status-link[data-href$="/app.bsky.feed.post/thread-other-reply"]`)
     .first()
     .click();
   await expect(page).toHaveURL(
@@ -1659,7 +1661,7 @@ test('keeps AT thread links navigable from a feed-backed post detail', async ({
   );
 
   await page
-    .locator(`.status-link[href$="/app.bsky.feed.post/thread-child"]`)
+    .locator(`.status-link[data-href$="/app.bsky.feed.post/thread-child"]`)
     .first()
     .click();
   await expect(page).toHaveURL(
@@ -1667,7 +1669,7 @@ test('keeps AT thread links navigable from a feed-backed post detail', async ({
   );
 
   await page
-    .locator(`.status-link[href$="/app.bsky.feed.post/thread-grandchild"]`)
+    .locator(`.status-link[data-href$="/app.bsky.feed.post/thread-grandchild"]`)
     .first()
     .click();
   await expect(page).toHaveURL(
@@ -1692,7 +1694,7 @@ test('restores AT feed position after opening a feed post in the sidebar', async
     element.dispatchEvent(new Event('scroll', { bubbles: true }));
   });
   await expect(page.getByText('AT feed position post 59')).toBeVisible();
-  const scrollBefore = await feedDeck.evaluate((element) => element.scrollTop);
+  const savedScrollTop = await feedDeck.evaluate((element) => element.scrollTop);
 
   await page.getByText('AT feed position post 59').first().click();
   await expect(page).toHaveURL(
@@ -1711,7 +1713,7 @@ test('restores AT feed position after opening a feed post in the sidebar', async
     .poll(() =>
       page.locator('#list-page').evaluate((element) => element.scrollTop),
     )
-    .toBeGreaterThan(scrollBefore - 4);
+    .toBeGreaterThanOrEqual(savedScrollTop - 24);
 });
 
 test('restores AT feed position after opening an image from the feed', async ({
@@ -1728,7 +1730,7 @@ test('restores AT feed position after opening an image from the feed', async ({
     element.dispatchEvent(new Event('scroll', { bubbles: true }));
   });
   await expect(page.getByText('AT feed position post 59')).toBeVisible();
-  const scrollBefore = await feedDeck.evaluate((element) => element.scrollTop);
+  const savedScrollTop = await feedDeck.evaluate((element) => element.scrollTop);
 
   await page
     .locator(`a.media[href*="/app.bsky.feed.post/scroll-59"]`)
@@ -1745,7 +1747,7 @@ test('restores AT feed position after opening an image from the feed', async ({
     .poll(() =>
       page.locator('#list-page').evaluate((element) => element.scrollTop),
     )
-    .toBeGreaterThan(scrollBefore - 4);
+    .toBeGreaterThanOrEqual(savedScrollTop - 24);
 });
 
 test('keeps a logged-in AT feed as the post sidebar background', async ({

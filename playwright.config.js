@@ -9,7 +9,15 @@ console.info = () => {};
 console.debug = () => {};
 
 const DEV_PORT = Number(process.env.PORT || process.env.VITE_PORT) || 5173;
-const BASE_URL = `http://localhost:${DEV_PORT}`;
+const BASE_URL = process.env.PHANPY_WEBSITE || `http://127.0.0.1:${DEV_PORT}`;
+const LOCAL_SERVER_URL =
+  process.env.VITE_HTTPS_CERT && process.env.VITE_HTTPS_KEY
+    ? `https://127.0.0.1:${DEV_PORT}`
+    : `http://127.0.0.1:${DEV_PORT}`;
+const httpsTestHost = process.env.PHANPY_WEBSITE
+  ? new URL(process.env.PHANPY_WEBSITE).hostname
+  : '';
+const httpsTestHostIp = process.env.PHANPY_WEBSITE_HOST_IP;
 const HAS_ATPROTO_TEST_CREDS = Boolean(
   process.env.ATPROTO_TEST_IDENTIFIER && process.env.ATPROTO_TEST_PASSWORD,
 );
@@ -21,9 +29,14 @@ const AGENT_CHROMIUM_ARGS = [
 ];
 const CHROMIUM_ARGS =
   process.env.BLUEPY_CHROMIUM_ARGS?.split(/\s+/).filter(Boolean) ??
-  (process.env.BLUEPY_AGENT_BROWSER || process.env.CI
-    ? AGENT_CHROMIUM_ARGS
-    : []);
+  [
+    ...(process.env.BLUEPY_AGENT_BROWSER || process.env.CI
+      ? AGENT_CHROMIUM_ARGS
+      : []),
+    ...(httpsTestHost && httpsTestHostIp
+      ? [`--host-resolver-rules=MAP ${httpsTestHost} ${httpsTestHostIp}`]
+      : []),
+  ];
 
 /**
  * Read environment variables from file.
@@ -51,6 +64,7 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: BASE_URL,
+    ignoreHTTPSErrors: Boolean(process.env.PHANPY_WEBSITE),
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -106,7 +120,8 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: `bun run dev -- --port ${DEV_PORT}`,
-    url: BASE_URL,
+    url: LOCAL_SERVER_URL,
+    ignoreHTTPSErrors: Boolean(process.env.VITE_HTTPS_CERT),
     reuseExistingServer: !process.env.CI,
   },
 });

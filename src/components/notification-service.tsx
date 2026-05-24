@@ -8,7 +8,8 @@ import { currentAppPath, navigatePath } from '../utils/router';
 import states from '../utils/states';
 import type { StoredAccount } from '../utils/store-utils';
 import {
-  getAccountByAccessToken,
+  getAccount,
+  getAccounts,
   getCurrentAccount,
 } from '../utils/store-utils';
 import usePageVisibility from '../utils/usePageVisibility';
@@ -19,14 +20,14 @@ import Modal from './modal';
 import Notification, { type NotificationProps } from './notification';
 
 interface ServiceWorkerNotificationMessage {
+  accountId?: string;
   type?: string;
   id?: string;
-  accessToken?: string;
 }
 
 interface RouteNotification {
+  accountId?: string;
   id?: string;
-  accessToken?: string;
 }
 
 interface NotificationFetchedAccount {
@@ -54,15 +55,13 @@ interface NotificationsApi {
 
 {
   if ('serviceWorker' in navigator) {
-    console.log('👂👂👂 Listen to message');
     navigator.serviceWorker.addEventListener('message', (event) => {
-      console.log('💥💥💥 Message event', event);
       const data = event?.data as ServiceWorkerNotificationMessage | undefined;
-      const { type, id, accessToken } = data || {};
+      const { accountId, type, id } = data || {};
       if (type === 'notification') {
         states.routeNotification = {
+          accountId,
           id,
-          accessToken,
         };
       }
     });
@@ -83,31 +82,38 @@ export default memo(function NotificationService() {
   const snapStates = useSnapshot(states);
   const { routeNotification } = snapStates;
 
-  console.log('🛎️ Notification service', routeNotification);
-
-  const { id, accessToken } =
+  const routeNotificationData =
     (routeNotification as RouteNotification | null | undefined) || {};
+  const queryParams = new URLSearchParams(window.location.search);
+  const id =
+    routeNotificationData.id ?? queryParams.get('notification_id') ?? undefined;
+  const accountId =
+    routeNotificationData.accountId ??
+    queryParams.get('account_id') ??
+    undefined;
   const [showNotificationSheet, setShowNotificationSheet] = useState<
     false | NotificationSheetData
   >(false);
 
   useLayoutEffect(() => {
     if (!hasServiceWorker) return;
-    if (!id || !accessToken) return;
-    const { instance: currentInstance } = api();
-    const { masto, instance } = api({
-      accessToken,
-    });
-    console.log('API', { accessToken, currentInstance, instance });
+    if (!id) return;
+    const accounts = getAccounts();
+    const targetAccount = accountId
+      ? getAccount(accountId)
+      : accounts.length === 1
+        ? accounts[0]
+        : null;
+    if (!targetAccount) return;
+    const currentAccount = getCurrentAccount();
+    const { instance: currentInstance } = api({ account: currentAccount });
+    const { masto, instance } = api({ account: targetAccount });
     const sameInstance = currentInstance === instance;
-    const account = accessToken
-      ? getAccountByAccessToken(accessToken)
-      : getCurrentAccount();
+    const account = targetAccount;
     void (async () => {
       const notifications = masto.v1.notifications as NotificationsApi;
       const notification = await notifications.$select(id).fetch();
       if (notification && account) {
-        console.log('🛎️ Notification', { id, notification, account });
         const accountInstance = account.instanceURL;
         const { type, status, account: notificationAccount } = notification;
         const hasModal = !!document.querySelector('#modal-container > *');
@@ -147,17 +153,16 @@ export default memo(function NotificationService() {
         console.warn('🛎️ Notification not found', id);
       }
     })();
-  }, [id, accessToken, hasServiceWorker]);
+  }, [accountId, id, hasServiceWorker]);
 
   // useLayoutEffect(() => {
   //   // Listen to message from service worker
   //   const handleMessage = (event) => {
   //     console.log('💥💥💥 Message event', event);
-  //     const { type, id, accessToken } = event?.data || {};
+  //     const { type, id } = event?.data || {};
   //     if (type === 'notification') {
   //       states.routeNotification = {
   //         id,
-  //         accessToken,
   //       };
   //     }
   //   };
@@ -187,7 +192,7 @@ export default memo(function NotificationService() {
     setShowNotificationSheet(false);
     states.routeNotification = null;
 
-    if (/\/notifications\?id=/i.test(currentAppPath())) {
+    if (/\/notifications\?(id|notification_id)=/i.test(currentAppPath())) {
       navigatePath('/notifications');
     }
   };

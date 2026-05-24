@@ -13,6 +13,35 @@ type FilterInfoMaybe = {
   titlesStr?: string;
 };
 
+function mediaRoute(
+  instance: string,
+  id: string,
+  key: 'media' | 'media-only',
+  index: number,
+): string {
+  return `/${instance}/s/${id}?${key}=${index}`;
+}
+
+function rememberMediaSource(): void {
+  const from = `${window.location.pathname}${window.location.search}`;
+  window.sessionStorage.setItem('bluepy:last-feed-path', from);
+  states.prevLocation = {
+    pathname: window.location.pathname,
+    search: window.location.search,
+    hash: window.location.hash,
+  };
+  const listPage = document.querySelector<HTMLElement>('#list-page');
+  if (!listPage) return;
+  window.sessionStorage.setItem(
+    `bluepy:feed-scroll:${from}`,
+    String(listPage.scrollTop),
+  );
+  window.sessionStorage.setItem(
+    'bluepy:last-feed-scroll',
+    String(listPage.scrollTop),
+  );
+}
+
 interface StatusMediaEmbedsProps {
   previewMode?: boolean;
   sensitive?: boolean | null;
@@ -116,15 +145,18 @@ export default function StatusMediaEmbeds({
                   showCaption
                   allowLongerCaption={!content || isSizeLarge}
                   lang={language ?? undefined}
-                  to={`/${instance}/s/${id}?${
-                    withinContext ? 'media' : 'media-only'
-                  }=${i + 1}`}
+                  to={mediaRoute(
+                    instance,
+                    id,
+                    withinContext ? 'media' : 'media-only',
+                    i + 1,
+                  )}
                   onClick={
                     onMediaClick
                       ? (e: React.MouseEvent) => {
                           onMediaClick(e, i, media, status);
                         }
-                      : undefined
+                      : rememberMediaSource
                   }
                 />
               </div>
@@ -158,15 +190,18 @@ export default function StatusMediaEmbeds({
                         ? i + 1
                         : undefined
                     }
-                    to={`/${instance}/s/${id}?${
-                      withinContext ? 'media' : 'media-only'
-                    }=${i + 1}`}
+                    to={mediaRoute(
+                      instance,
+                      id,
+                      withinContext ? 'media' : 'media-only',
+                      i + 1,
+                    )}
                     onClick={
                       onMediaClick
                         ? (e: React.MouseEvent) => {
                             onMediaClick(e, i, media, status);
                           }
-                        : undefined
+                        : rememberMediaSource
                     }
                     checkAspectRatio={mediaAttachments.length === 1}
                   />

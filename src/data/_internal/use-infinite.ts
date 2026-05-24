@@ -21,6 +21,7 @@ export function useInfiniteList<TItem>(opts: {
   isLoadingMore: boolean;
   isLoading: boolean;
   error: Error | null;
+  refetch: () => void;
 } {
   const query = useInfiniteQuery({
     queryKey: opts.queryKey,
@@ -43,5 +44,8 @@ export function useInfiniteList<TItem>(opts: {
     isLoadingMore: query.isFetchingNextPage,
     isLoading: query.isLoading,
     error: query.error instanceof Error ? query.error : null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
 }

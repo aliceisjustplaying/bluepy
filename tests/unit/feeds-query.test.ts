@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 
-import { timelineFeedQueryOptions } from '../../src/data/feeds';
+import {
+  buildAccountMonthSearchQuery,
+  timelineFeedQueryOptions,
+} from '../../src/data/feeds';
 import { keys, type ViewerScope } from '../../src/data/keys';
 
 const scope: ViewerScope = [
@@ -20,5 +23,17 @@ describe('timelineFeedQueryOptions', () => {
     const opts = timelineFeedQueryOptions('did:plc:viewer', scope);
     expect(opts.enabled).toBe(true);
     expect(opts.queryKey).toEqual(keys.timeline(scope));
+  });
+});
+
+describe('buildAccountMonthSearchQuery', () => {
+  test('uses the first day of the selected month as the lower bound', () => {
+    expect(buildAccountMonthSearchQuery('alice.test', '2024-03')).toEqual({
+      query: 'from:alice.test',
+      options: {
+        since: '2024-03-01',
+        until: '2024-04-01',
+      },
+    });
   });
 });

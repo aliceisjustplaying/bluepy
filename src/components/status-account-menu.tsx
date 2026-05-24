@@ -140,13 +140,7 @@ export default function StatusAccountMenu({
                     </span>
                   </>
                 }
-                itemProps={{
-                  className: 'danger',
-                  'data-testid': 'status-delete-trigger',
-                }}
-                confirmItemProps={{
-                  'data-testid': 'status-delete-confirm',
-                }}
+                itemProps={{ className: 'danger' }}
                 menuItemClassName="danger"
                 onClick={() => {
                   void (async () => {

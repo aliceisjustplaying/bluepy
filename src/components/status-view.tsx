@@ -1,6 +1,7 @@
 import './status.css';
 
 import { shallowEqual } from 'fast-equals';
+import type { ReactNode } from 'react';
 import { memo } from 'react';
 import { use, useCallback, useMemo } from 'react';
 import { useSnapshot } from 'valtio';
@@ -13,10 +14,13 @@ import {
   shouldCollapseMutedStatus,
   shouldHideMutedStatus,
 } from '../utils/muted-post-visibility';
+import { usePost } from '../data/posts';
+import { usePostModeration } from '../data/moderation';
 import states, { statusKey } from '../utils/states';
 import { getCurrentAccID } from '../utils/store-utils';
 
 import FilteredStatus from './filtered-status';
+import ModerationGate from './moderation-gate';
 import MutedStatus from './muted-status';
 import StatusContent from './status-content';
 import { StatusGhost, StatusSkeleton } from './status-placeholders';
@@ -145,6 +149,18 @@ function StatusRouter({
   const instance = apiResult.instance;
   const snapStates = useSnapshot(states);
   const sKey = resolvedSKey;
+  const postUri =
+    typeof status._atproto?.uri === 'string' ? status._atproto.uri : undefined;
+  const { data: canonicalPost } = usePost(postUri);
+  const moderation = usePostModeration(canonicalPost);
+
+  const withModeration = useCallback(
+    (node: ReactNode) => {
+      if (!postUri) return node;
+      return <ModerationGate decision={moderation}>{node}</ModerationGate>;
+    },
+    [moderation, postUri],
+  );
 
   const {
     account,
@@ -292,6 +308,7 @@ function StatusRouter({
     filterInfo.action !== 'blur'
   ) {
     return (
+      withModeration(
       <FilteredStatus
         status={status}
         filterInfo={filterInfo}
@@ -300,6 +317,7 @@ function StatusRouter({
         quoted={quoted}
         renderPeekStatus={renderPeekStatus}
       />
+      )
     );
   }
 
@@ -312,19 +330,19 @@ function StatusRouter({
       directContext,
     })
   ) {
-    return (
+    return withModeration(
       <MutedStatus
         status={status}
         instance={instance}
         containerProps={hoverContainerProps}
         quoted={quoted}
         renderExpandedStatus={renderExpandedStatus}
-      />
+      />,
     );
   }
 
   if (reblog) {
-    return (
+    return withModeration(
       <StatusReblog
         wrapperStatus={status}
         reblog={reblog}
@@ -338,11 +356,11 @@ function StatusRouter({
         group={group}
         onMouseEnter={debugHover}
         renderStatus={renderReblogStatus}
-      />
+      />,
     );
   }
 
-  return (
+  return withModeration(
     <StatusContent
       statusID={statusID}
       status={status}
@@ -369,7 +387,7 @@ function StatusRouter({
       showCommentCount={forceShowCommentCount}
       showQuoteCount={forceShowQuoteCount}
       renderStatus={renderContentStatus}
-    />
+    />,
   );
 }
 

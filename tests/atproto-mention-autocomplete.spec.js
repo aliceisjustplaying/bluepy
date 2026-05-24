@@ -1,64 +1,43 @@
 import { expect, test } from '@playwright/test';
 
+const IDENTIFIER = process.env.ATPROTO_TEST_IDENTIFIER;
+const PASSWORD = process.env.ATPROTO_TEST_PASSWORD;
+const HAS_CREDS = Boolean(IDENTIFIER && PASSWORD);
+
+test.skip(!HAS_CREDS, 'ATPROTO_TEST_IDENTIFIER/PASSWORD not set');
+
+async function loginViaAppPassword(page) {
+  await page.goto('/login');
+  await page.getByLabel('Handle or PDS URL').fill(IDENTIFIER);
+  await page.getByText('Use app password').click();
+  await page.locator('input[type="password"]').fill(PASSWORD);
+  await page
+    .getByRole('button', { name: 'Continue with app password' })
+    .click();
+  await expect(page).not.toHaveURL(/\/login$/, { timeout: 60_000 });
+}
+
 test.describe('ATProto mention autocomplete', () => {
   test('inserts Bluesky mention autocomplete selections in the composer', async ({
     page,
   }) => {
     test.setTimeout(90_000);
-    await page.addInitScript(() => {
-      const did = 'did:plc:composer';
-      const account = {
-        info: {
-          id: did,
-          username: 'composer.test',
-          acct: 'composer.test',
-          displayName: 'Composer',
-          avatarStatic: '',
+    await page.route('**/xrpc/app.bsky.actor.searchActors**', async (route) => {
+      await route.fulfill({
+        json: {
+          actors: [
+            {
+              did: 'did:plc:alice',
+              handle: 'alice.test',
+              displayName: 'Alice Mention',
+              avatar: 'https://example.com/avatar.png',
+            },
+          ],
         },
-        instanceURL: 'bsky.social',
-        accessToken: JSON.stringify({ type: 'atproto-oauth', sub: did }),
-        atproto: true,
-        createdAt: Date.now(),
-      };
-      localStorage.setItem('accounts', JSON.stringify([account]));
-      window.__BLUEPY_OAUTH_TEST_CLIENT__ = {
-        restore: async () => ({
-          sub: did,
-          did,
-          fetchHandler: async (url) => {
-            const urlString = typeof url === 'string' ? url : url.url;
-            if (urlString.includes('app.bsky.actor.getProfile')) {
-              return Response.json({
-                did,
-                handle: 'composer.test',
-                displayName: 'Composer',
-              });
-            }
-            if (urlString.includes('app.bsky.actor.searchActors')) {
-              return Response.json({
-                actors: [
-                  {
-                    did: 'did:plc:alice',
-                    handle: 'alice.test',
-                    displayName: 'Alice Mention',
-                    avatar: 'https://example.com/avatar.png',
-                  },
-                ],
-              });
-            }
-            if (urlString.includes('app.bsky.feed.getTimeline')) {
-              return Response.json({ feed: [] });
-            }
-            if (urlString.includes('app.bsky.actor.getPreferences')) {
-              return Response.json({ preferences: [] });
-            }
-            return Response.json({});
-          },
-        }),
-      };
+      });
     });
 
-    await page.goto('/');
+    await loginViaAppPassword(page);
     await page.getByRole('button', { name: 'Compose' }).click();
     const textarea = page.getByPlaceholder('What are you doing?');
     await expect(textarea).toBeVisible({ timeout: 60_000 });

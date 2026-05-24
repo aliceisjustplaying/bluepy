@@ -17,7 +17,9 @@ export function useList(listUri: AtUri | undefined) {
 
   const query = useQuery({
     queryKey: listUri ? [...scope, 'list', listUri] as const : ['list', 'disabled'],
-    enabled: Boolean(listUri),
+    enabled: Boolean(
+      listUri && (activeDid ? clients.activeAppViewProxyAgent : true),
+    ),
     staleTime: 60_000,
     queryFn: async () => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
@@ -40,8 +42,10 @@ export function useListFeed(listUri: AtUri | undefined) {
   const qc = useQueryClient();
 
   return useInfiniteList<string>({
-    queryKey: listUri ? keys.feed(scope, listUri) : ['listFeed', 'disabled'],
-    enabled: Boolean(listUri),
+    queryKey: listUri ? keys.listFeed(scope, listUri) : ['listFeed', 'disabled'],
+    enabled: Boolean(
+      listUri && (activeDid ? clients.activeAppViewProxyAgent : true),
+    ),
     queryFn: async ({ pageParam }) => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
       const res = await agent.app.bsky.feed.getListFeed({
@@ -65,7 +69,9 @@ export function useLists(actor: string | undefined) {
 
   return useInfiniteList<AppBskyGraphDefs.ListView>({
     queryKey: actor ? [...scope, 'lists', actor] as const : ['lists', 'disabled'],
-    enabled: Boolean(actor),
+    enabled: Boolean(
+      actor && (activeDid ? clients.activeAppViewProxyAgent : true),
+    ),
     queryFn: async ({ pageParam }) => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
       const res = await agent.app.bsky.graph.getLists({

@@ -9,6 +9,7 @@ import logo from '../assets/logo.svg';
 import LangSelector from '../components/lang-selector';
 import Link from '../components/link';
 import Loader from '../components/loader';
+import { syncSessionsStoreFromLegacyAccount } from '../data/legacy-session';
 import { initClient, initInstance, initPreferences } from '../utils/api';
 import {
   APPVIEW_OPTIONS,
@@ -17,7 +18,10 @@ import {
   getActiveAppview,
   loginAtproto,
 } from '../utils/atproto-adapter';
-import { startAtprotoOAuthLogin } from '../utils/atproto-oauth';
+import {
+  redirectLocalhostToLoopback,
+  startAtprotoOAuthLogin,
+} from '../utils/atproto-oauth';
 import { notifyAuthChanged } from '../utils/auth-context';
 import { navigatePath } from '../utils/router';
 import store from '../utils/store';
@@ -47,6 +51,9 @@ function Login() {
   const [bskyPassword, setBskyPassword] = useState('');
   const [bskyService, setBskyService] = useState('');
   const [appview, setAppview] = useState(getActiveAppview());
+  useEffect(() => {
+    redirectLocalhostToLoopback();
+  }, []);
   useEffect(() => {
     applyAppviewTheme(appview);
   }, [appview]);
@@ -97,6 +104,7 @@ function Login() {
           createdAt: Date.now(),
         });
         setCurrentAccountID(account.id);
+        syncSessionsStoreFromLegacyAccount();
         const client = initClient({ instance: BSKY_INSTANCE, accessToken });
         await Promise.allSettled([
           initPreferences(client),

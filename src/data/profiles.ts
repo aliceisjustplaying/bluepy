@@ -21,7 +21,8 @@ export async function fetchProfile(
   clients: ReturnType<typeof useClients>,
   activeDid: string | null,
 ): Promise<AppBskyActorDefs.ProfileViewDetailed> {
-  const agent = getReadAgent(clients, feedReadMode(activeDid));
+  const mode = feedReadMode(activeDid);
+  const agent = getReadAgent(clients, mode);
   const res = await agent.getProfile({ actor });
   return res.data;
 }
@@ -46,7 +47,11 @@ function useResolvedProfileDid(
       actor && !actorIsDid
         ? keys.actorResolution(scope, actor)
         : ['actorResolution', 'disabled'],
-    enabled: Boolean(actor && !actorIsDid),
+    enabled: Boolean(
+      actor &&
+        !actorIsDid &&
+        (activeDid ? clients.activeAppViewProxyAgent : true),
+    ),
     staleTime: directRoute ? DIRECT_ROUTE_STALE_TIME : Number.POSITIVE_INFINITY,
     refetchOnMount: directRoute ? 'always' : undefined,
     queryFn: async () => {
@@ -85,7 +90,9 @@ function useProfileByDid(
     queryKey: profileDid
       ? keys.profileByDid(scope, profileDid)
       : ['profile', 'disabled'],
-    enabled: Boolean(profileDid),
+    enabled: Boolean(
+      profileDid && (activeDid ? clients.activeAppViewProxyAgent : true),
+    ),
     staleTime: options.staleTime,
     refetchOnMount: options.refetchOnMount,
     queryFn: async () => {
@@ -145,7 +152,6 @@ export function useProfileRoute(actor: string | undefined): {
     useResolvedProfileDid(actor, { directRoute: true });
   const profileQuery = useProfileByDid(profileDid, {
     staleTime: DIRECT_ROUTE_STALE_TIME,
-    refetchOnMount: 'always',
     fetchActor: actor,
   });
 
@@ -164,7 +170,11 @@ export function useSearchActorsTypeahead(term: string | undefined) {
 
   return useQuery({
     queryKey: keys.search(scope, term ?? '', 'actors'),
-    enabled: Boolean(term && term.length >= 1),
+    enabled: Boolean(
+      term &&
+        term.length >= 1 &&
+        (activeDid ? clients.activeAppViewProxyAgent : true),
+    ),
     staleTime: 30_000,
     queryFn: async () => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
@@ -183,7 +193,9 @@ export function useFollowers(subjectDid: string | undefined) {
 
   return useInfiniteList({
     queryKey: subjectDid ? keys.followers(scope, subjectDid) : ['followers', 'disabled'],
-    enabled: Boolean(subjectDid),
+    enabled: Boolean(
+      subjectDid && (activeDid ? clients.activeAppViewProxyAgent : true),
+    ),
     queryFn: async ({ pageParam }) => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
       const res = await agent.getFollowers({
@@ -208,7 +220,9 @@ export function useFollows(subjectDid: string | undefined) {
 
   return useInfiniteList({
     queryKey: subjectDid ? keys.follows(scope, subjectDid) : ['follows', 'disabled'],
-    enabled: Boolean(subjectDid),
+    enabled: Boolean(
+      subjectDid && (activeDid ? clients.activeAppViewProxyAgent : true),
+    ),
     queryFn: async ({ pageParam }) => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
       const res = await agent.getFollows({
