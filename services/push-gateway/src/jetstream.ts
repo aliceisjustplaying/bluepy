@@ -150,10 +150,15 @@ export async function consumeJetstream(
     });
     try {
       while (!options.signal.aborted && hasActiveRecipients(db)) {
-        const next = await Promise.race([iterator.next(), abortPromise]);
-        if (next.done) break;
-        const result = await processJetstreamEventWithProfileCache(db, next.value as JetstreamPostEvent);
-        options.onResult?.(result);
+        try {
+          const next = await Promise.race([iterator.next(), abortPromise]);
+          if (next.done) break;
+          const result = await processJetstreamEventWithProfileCache(db, next.value as JetstreamPostEvent);
+          options.onResult?.(result);
+        } catch (error) {
+          if (options.signal.aborted) break;
+          options.onError?.(error);
+        }
       }
     } finally {
       removeAbortListener?.();

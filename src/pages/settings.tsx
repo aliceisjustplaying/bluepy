@@ -1159,6 +1159,7 @@ function PushNotificationsSection({
   const [mentionsEnabled, setMentionsEnabled] = useState<boolean>(true);
   const [richPreviewsEnabled, setRichPreviewsEnabled] = useState<boolean>(true);
   const pushToggleVersions = useRef({
+    account: 0,
     replies: 0,
     mentions: 0,
     richPreviews: 0,
@@ -1228,11 +1229,14 @@ function PushNotificationsSection({
                 checked={allowNotifications}
                 onChange={(e) => {
                   const { checked } = e.currentTarget;
+                  const version = pushToggleVersions.current.account + 1;
+                  pushToggleVersions.current.account = version;
                   if (checked) {
                     void (async () => {
                       setUIState('loading');
                       try {
                         const permission = await Notification.requestPermission();
+                        if (pushToggleVersions.current.account !== version) return;
                         if (permission !== 'granted') {
                           setAllowNotifications(false);
                           if (permission === 'denied') {
@@ -1243,28 +1247,36 @@ function PushNotificationsSection({
                           return;
                         }
                         await registerCurrentDevice(serviceAuth);
+                        if (pushToggleVersions.current.account !== version) return;
                         try {
                           await savePushSettings({ enabled: true }, serviceAuth);
                         } catch (err) {
                           await unregisterCurrentDevice(serviceAuth).catch(() => undefined);
                           throw err;
                         }
+                        if (pushToggleVersions.current.account !== version) return;
                         setAllowNotifications(true);
                       } catch (err) {
+                        if (pushToggleVersions.current.account !== version) return;
                         setAllowNotifications(false);
                         handlePushError(err, t`Failed to update subscription. Please try again.`);
                       } finally {
-                        setUIState('default');
+                        if (pushToggleVersions.current.account === version) setUIState('default');
                       }
                     })();
                   } else {
                     setAllowNotifications(false);
                     void (async () => {
+                      setUIState('loading');
                       try {
                         await savePushSettings({ enabled: false }, serviceAuth);
+                        if (pushToggleVersions.current.account !== version) return;
                       } catch (err) {
+                        if (pushToggleVersions.current.account !== version) return;
                         setAllowNotifications(true);
                         handlePushError(err, t`Failed to update subscription. Please try again.`);
+                      } finally {
+                        if (pushToggleVersions.current.account === version) setUIState('default');
                       }
                     })();
                   }
@@ -1376,13 +1388,7 @@ function PushNotificationsSection({
                 onClick={() => {
                   void (async () => {
                     try {
-                      await savePushSettings({ enabled: false }, serviceAuth);
-                      try {
-                        await unregisterCurrentDevice(serviceAuth);
-                      } catch (err) {
-                        await savePushSettings({ enabled: true }, serviceAuth).catch(() => undefined);
-                        throw err;
-                      }
+                      await unregisterCurrentDevice(serviceAuth);
                       setAllowNotifications(false);
                     } catch (err) {
                       handlePushError(err, t`Failed to remove subscription. Please try again.`);

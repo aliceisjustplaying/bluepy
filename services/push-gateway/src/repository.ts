@@ -1,3 +1,4 @@
+import { isIP } from 'node:net';
 import type { Db } from './db.js';
 import { keyedHash } from './privacy.js';
 import type { Candidate } from './candidates.js';
@@ -9,10 +10,10 @@ export interface SettingsInput {
   richPreviewsEnabled?: boolean;
 }
 
-let activeRecipientCache: { expiresAt: number; dids: Set<string> } | undefined;
+const activeRecipientCache = new WeakMap<Db, { expiresAt: number; dids: Set<string> }>();
 
-function invalidateActiveRecipients(): void {
-  activeRecipientCache = undefined;
+function invalidateActiveRecipients(db: Db): void {
+  activeRecipientCache.delete(db);
 }
 
 export function getSettings(db: Db, did: string) {
@@ -26,20 +27,66 @@ export function getSettings(db: Db, did: string) {
 }
 
 export function upsertSettings(db: Db, did: string, input: SettingsInput) {
-  const current = getSettings(db, did);
-  const next = { ...current, ...input };
   db.prepare(
     `INSERT INTO settings (did, enabled, replies_enabled, mentions_enabled, rich_previews_enabled, updated_at)
-     VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+     VALUES (?, COALESCE(?, 0), COALESCE(?, 1), COALESCE(?, 1), COALESCE(?, 1), CURRENT_TIMESTAMP)
      ON CONFLICT(did) DO UPDATE SET
-       enabled = excluded.enabled,
-       replies_enabled = excluded.replies_enabled,
-       mentions_enabled = excluded.mentions_enabled,
-       rich_previews_enabled = excluded.rich_previews_enabled,
+       enabled = COALESCE(?, settings.enabled),
+       replies_enabled = COALESCE(?, settings.replies_enabled),
+       mentions_enabled = COALESCE(?, settings.mentions_enabled),
+       rich_previews_enabled = COALESCE(?, settings.rich_previews_enabled),
        updated_at = CURRENT_TIMESTAMP`,
-  ).run(did, Number(next.enabled), Number(next.repliesEnabled), Number(next.mentionsEnabled), Number(next.richPreviewsEnabled));
-  invalidateActiveRecipients();
-  return next;
+  ).run(
+    did,
+    input.enabled === undefined ? null : Number(input.enabled),
+    input.repliesEnabled === undefined ? null : Number(input.repliesEnabled),
+    input.mentionsEnabled === undefined ? null : Number(input.mentionsEnabled),
+    input.richPreviewsEnabled === undefined ? null : Number(input.richPreviewsEnabled),
+    input.enabled === undefined ? null : Number(input.enabled),
+    input.repliesEnabled === undefined ? null : Number(input.repliesEnabled),
+    input.mentionsEnabled === undefined ? null : Number(input.mentionsEnabled),
+    input.richPreviewsEnabled === undefined ? null : Number(input.richPreviewsEnabled),
+  );
+  invalidateActiveRecipients(db);
+  return getSettings(db, did);
+}
+
+function isPrivateIpAddress(hostname: string): boolean {
+  const family = isIP(hostname);
+  if (family === 4) {
+    const [a = 0, b = 0] = hostname.split('.').map(Number);
+    return (
+      a === 0 ||
+      a === 10 ||
+      a === 127 ||
+      (a === 169 && b === 254) ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168)
+    );
+  }
+  if (family === 6) {
+    const normalized = hostname.toLowerCase();
+    return normalized === '::1' || normalized.startsWith('fc') || normalized.startsWith('fd') || normalized.startsWith('fe80:');
+  }
+  return false;
+}
+
+function validatePushEndpoint(endpoint: string): void {
+  let url: URL;
+  try {
+    url = new URL(endpoint);
+  } catch {
+    throw new Error('invalid_subscription');
+  }
+  const hostname = url.hostname.toLowerCase();
+  if (
+    url.protocol !== 'https:' ||
+    hostname === 'localhost' ||
+    hostname.endsWith('.localhost') ||
+    isPrivateIpAddress(hostname)
+  ) {
+    throw new Error('invalid_subscription');
+  }
 }
 
 export function registerSubscription(db: Db, secret: string, did: string, body: unknown, vapidKeyId: string, userAgent?: string) {
@@ -48,6 +95,7 @@ export function registerSubscription(db: Db, secret: string, did: string, body: 
   const p256dh = typeof payload.keys?.p256dh === 'string' ? payload.keys.p256dh : '';
   const auth = typeof payload.keys?.auth === 'string' ? payload.keys.auth : '';
   if (!endpoint || !p256dh || !auth) throw new Error('invalid_subscription');
+  validatePushEndpoint(endpoint);
   const endpointHash = keyedHash(secret, endpoint);
   db.prepare(
     `INSERT INTO subscriptions (did, endpoint, endpoint_hash, p256dh, auth, vapid_key_id, user_agent, active, updated_at)
@@ -62,14 +110,14 @@ export function registerSubscription(db: Db, secret: string, did: string, body: 
        inactive_at = NULL,
        updated_at = CURRENT_TIMESTAMP`,
   ).run(did, endpoint, endpointHash, p256dh, auth, vapidKeyId, userAgent ?? null);
-  invalidateActiveRecipients();
+  invalidateActiveRecipients(db);
   return db.prepare('SELECT id, did, endpoint_hash, active FROM subscriptions WHERE did = ? AND endpoint_hash = ?').get(did, endpointHash);
 }
 
 export function unregisterSubscription(db: Db, secret: string, did: string, endpoint: string) {
   const endpointHash = keyedHash(secret, endpoint);
   db.prepare('UPDATE subscriptions SET active = 0, inactive_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE did = ? AND endpoint_hash = ?').run(did, endpointHash);
-  invalidateActiveRecipients();
+  invalidateActiveRecipients(db);
 }
 
 export function getCurrentSubscription(db: Db, secret: string, did: string, endpoint: string) {
@@ -100,7 +148,7 @@ export function deleteAccountData(db: Db, did: string) {
     db.prepare('DELETE FROM profile_cache WHERE did = ?').run(did);
   });
   tx();
-  invalidateActiveRecipients();
+  invalidateActiveRecipients(db);
 }
 
 export function pruneExpiredData(db: Db, now = new Date()): void {
@@ -130,7 +178,8 @@ export interface NotificationEventRow {
 
 export function activeRecipientDids(db: Db): Set<string> {
   const now = Date.now();
-  if (activeRecipientCache && activeRecipientCache.expiresAt > now) return activeRecipientCache.dids;
+  const cached = activeRecipientCache.get(db);
+  if (cached && cached.expiresAt > now) return cached.dids;
   const rows = db
     .prepare(
       `SELECT DISTINCT subscriptions.did
@@ -140,7 +189,7 @@ export function activeRecipientDids(db: Db): Set<string> {
     )
     .all() as { did: string }[];
   const dids = new Set(rows.map((row) => row.did));
-  activeRecipientCache = { expiresAt: now + 5_000, dids };
+  activeRecipientCache.set(db, { expiresAt: now + 5_000, dids });
   return dids;
 }
 

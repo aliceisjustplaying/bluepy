@@ -1,3 +1,4 @@
+import type { ComAtprotoServerGetServiceAuth } from '@atproto/api';
 import store from './store';
 
 const GATEWAY_URL = import.meta.env.PHANPY_PUSH_GATEWAY_URL || '';
@@ -23,7 +24,9 @@ export interface ServiceAuthCapableAgent {
   com?: {
     atproto?: {
       server?: {
-        getServiceAuth?: (args: { aud: string; lxm: string }) => Promise<{ data: { token: string } }>;
+        getServiceAuth?: (
+          args: ComAtprotoServerGetServiceAuth.QueryParams,
+        ) => Promise<ComAtprotoServerGetServiceAuth.Response>;
       };
     };
   };
@@ -163,7 +166,7 @@ export async function registerCurrentDevice(auth: ServiceAuthProvider): Promise<
       body: JSON.stringify(subscription.toJSON()),
     });
   } catch (error) {
-    if (shouldRollbackSubscription) await subscription.unsubscribe();
+    if (shouldRollbackSubscription) await subscription.unsubscribe().catch(() => undefined);
     throw error;
   }
   store.local.set('pushGatewayVapidKeyId', key.keyId);

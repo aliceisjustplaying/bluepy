@@ -48,8 +48,19 @@ export function webPushTopic(endpoint: string, eventId: number): string | undefi
 export function createDeliveryAttemptsForEvent(db: Db, notificationEventId: number, recipientDid: string): number {
   const activeSubs = db.prepare('SELECT id FROM subscriptions WHERE did = ? AND active = 1').all(recipientDid) as { id: number }[];
   const insert = db.prepare(
-    `INSERT OR IGNORE INTO delivery_attempts (notification_event_id, subscription_id, status)
-     VALUES (?, ?, 'pending')`,
+    `INSERT INTO delivery_attempts (notification_event_id, subscription_id, status)
+     VALUES (?, ?, 'pending')
+     ON CONFLICT(notification_event_id, subscription_id) DO UPDATE SET
+       status = CASE
+         WHEN delivery_attempts.status IN ('failed', 'gone') THEN 'pending'
+         ELSE delivery_attempts.status
+       END,
+       next_attempt_at = CASE
+         WHEN delivery_attempts.status IN ('failed', 'gone') THEN CURRENT_TIMESTAMP
+         ELSE delivery_attempts.next_attempt_at
+       END,
+       updated_at = CURRENT_TIMESTAMP
+     WHERE delivery_attempts.status IN ('failed', 'gone')`,
   );
   let created = 0;
   for (const sub of activeSubs) created += insert.run(notificationEventId, sub.id).changes;

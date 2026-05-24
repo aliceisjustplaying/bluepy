@@ -80,7 +80,9 @@ function Accounts({ onClose }: AccountsProps) {
   };
   const serviceAuthFor = (did: string): ServiceAuthProvider => async (lxm) => {
     const currentAgent = currentAccount === did ? clients.pdsRepoAgent : null;
-    const agent = (currentAgent ?? createAppPasswordAgentForDid(did) ?? await restorePdsRepoAgentFor(did)) as ServiceAuthCapableAgent;
+    const resolvedAgent = currentAgent ?? createAppPasswordAgentForDid(did) ?? await restorePdsRepoAgentFor(did);
+    if (!resolvedAgent) throw new Error('Missing Bluesky OAuth session for push');
+    const agent = resolvedAgent as ServiceAuthCapableAgent;
     const res = await agent.com?.atproto?.server?.getServiceAuth?.({
       aud: SERVICE_DID,
       lxm,

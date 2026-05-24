@@ -56,8 +56,8 @@ function loadVapidKeys(activeKeyId: string, activePair: VapidKeyPair): Record<st
           return [
             keyId,
             {
-              publicKey,
-              privateKey,
+              publicKey: publicKey.trim(),
+              privateKey: privateKey.trim(),
             },
           ];
         }),
@@ -70,11 +70,14 @@ function loadVapidKeys(activeKeyId: string, activePair: VapidKeyPair): Record<st
 }
 
 export function loadConfig(): GatewayConfig {
-  const activeVapidKeyId = required('VAPID_KEY_ID');
+  const activeVapidKeyId = required('VAPID_KEY_ID').trim();
+  if (!activeVapidKeyId) throw new Error('Missing VAPID_KEY_ID');
   const activeVapidPair = {
-    publicKey: required('VAPID_PUBLIC_KEY'),
-    privateKey: required('VAPID_PRIVATE_KEY'),
+    publicKey: required('VAPID_PUBLIC_KEY').trim(),
+    privateKey: required('VAPID_PRIVATE_KEY').trim(),
   };
+  if (!activeVapidPair.publicKey) throw new Error('Missing VAPID_PUBLIC_KEY');
+  if (!activeVapidPair.privateKey) throw new Error('Missing VAPID_PRIVATE_KEY');
   const port = Number(process.env.PORT ?? 8787);
   if (!Number.isInteger(port) || port < 1 || port > 65_535) throw new Error('Invalid PORT');
   return {

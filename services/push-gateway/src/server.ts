@@ -23,16 +23,34 @@ async function readJson(req: http.IncomingMessage): Promise<unknown> {
 }
 
 function send(res: http.ServerResponse, status: number, body: unknown, headers: Record<string, string> = {}) {
+  if (status === 204 || status === 304) {
+    res.writeHead(status, headers);
+    res.end();
+    return;
+  }
   res.writeHead(status, { 'content-type': 'application/json', ...headers });
   res.end(JSON.stringify(body));
 }
 
 function errorStatus(error: unknown): number {
-  if (!(error instanceof Error)) return 400;
+  if (!(error instanceof Error)) return 500;
   if (['invalid_auth_token', 'missing_auth', 'missing_dev_did', 'invalid_auth_subject', 'invalid_auth_audience', 'invalid_auth_method', 'expired_auth_token', 'invalid_auth_signature', 'unsupported_auth_alg', 'replayed_auth_token'].includes(error.message)) {
     return 401;
   }
-  return 400;
+  if (error.message === 'body_too_large') return 413;
+  if (
+    [
+      'admin_only',
+      'invalid_did',
+      'invalid_subscription',
+      'json_required',
+      'localhost_only',
+      'push_disabled',
+    ].includes(error.message)
+  ) {
+    return 400;
+  }
+  return 500;
 }
 
 function publicError(error: unknown): string {
@@ -59,7 +77,7 @@ function publicError(error: unknown): string {
   ) {
     return error.message;
   }
-  return 'bad_request';
+  return errorStatus(error) >= 500 ? 'internal_error' : 'bad_request';
 }
 
 function tokenEquals(actual: string | undefined, expected: string | undefined): boolean {
