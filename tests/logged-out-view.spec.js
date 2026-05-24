@@ -396,7 +396,7 @@ test('canonicalizes Worker-encoded native AT URI post URLs', async ({
   await expect(page.locator('#welcome')).toBeHidden();
 });
 
-test('keeps nested same-author thread replies under their parent', async ({
+test('keeps nested same-author thread replies ordered in a flat reply list', async ({
   page,
 }) => {
   const directUri =
@@ -505,7 +505,7 @@ test('keeps nested same-author thread replies under their parent', async ({
   await expect(page.locator('text=Parent in nested chain')).toBeVisible();
   await expect(page.locator('text=Same author child reply')).toBeVisible();
 
-  const childIsNestedUnderParent = await page.evaluate(() => {
+  const childIsSiblingAfterParent = await page.evaluate(() => {
     const statuses = Array.from(document.querySelectorAll('.status'));
     const parentStatus = statuses.find((status) =>
       status.textContent?.includes('Parent in nested chain'),
@@ -513,10 +513,16 @@ test('keeps nested same-author thread replies under their parent', async ({
     const childStatus = statuses.find((status) =>
       status.textContent?.includes('Same author child reply'),
     );
-    return !!parentStatus?.closest('li')?.contains(childStatus || null);
+    const parentLi = parentStatus?.closest('li');
+    const childLi = childStatus?.closest('li');
+    return parentLi?.parentElement === childLi?.parentElement;
   });
+  const nestedReplyLists = await page
+    .locator('li.descendant ul.timeline.flat.contextual')
+    .count();
   const visibleText = await page.locator('body').innerText();
-  expect(childIsNestedUnderParent).toBe(true);
+  expect(childIsSiblingAfterParent).toBe(true);
+  expect(nestedReplyLists).toBe(0);
   expect(visibleText.indexOf('Parent in nested chain')).toBeLessThan(
     visibleText.indexOf('Same author child reply'),
   );
