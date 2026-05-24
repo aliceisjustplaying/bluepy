@@ -206,6 +206,7 @@ export default function PostThreadPage({
       const targetTop = Math.max(0, headerBottom - scrollerRect.top);
       scroller.scrollTop += heroRect.top - scrollerRect.top - targetTop;
     };
+    alignHero();
     requestAnimationFrame(() => {
       requestAnimationFrame(alignHero);
     });
