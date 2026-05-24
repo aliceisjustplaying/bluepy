@@ -202,7 +202,7 @@ a[href^='http'][rel*='nofollow']:visited:not(:has(div)) {
 .deck h2 {
   font-size: 1.45em;
 }
-.deck.padded-bottom .timeline > li:last-child {
+.deck.padded-bottom > .timeline > li:last-child {
   padding-bottom: 80vh !important;
   padding-bottom: 80dvh !important;
 }
