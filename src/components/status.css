@@ -78,7 +78,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-block: 8px -8px;
+  margin-block: 8px 0;
   margin-inline-start: calc(14px + 50px + 10px);
   padding-inline-end: 14px;
   color: var(--text-insignificant-color);
