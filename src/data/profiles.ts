@@ -15,6 +15,7 @@ import { keys } from './keys';
 import { useViewerScope } from './scope';
 
 const DIRECT_ROUTE_STALE_TIME = 60_000;
+const PROFILE_GRAPH_LIMIT = 80;
 
 function isDid(actor: string): boolean {
   return actor.startsWith('did:');
@@ -190,54 +191,64 @@ export function useSearchActorsTypeahead(term: string | undefined) {
   });
 }
 
-export function useFollowers(subjectDid: string | undefined) {
+export function useFollowers(
+  subjectDid: string | undefined,
+  options?: { enabled?: boolean },
+) {
   const clients = useClients();
   const activeDid = useActiveDid();
   const scope = useViewerScope();
   const qc = useQueryClient();
 
   return useInfiniteList({
-    queryKey: subjectDid ? keys.followers(scope, subjectDid) : ['followers', 'disabled'],
-    enabled: Boolean(
-      subjectDid && (activeDid ? clients.activeAppViewProxyAgent : true),
-    ),
+    queryKey: subjectDid
+      ? keys.followers(scope, subjectDid)
+      : ['followers', 'disabled'],
+    enabled:
+      (options?.enabled ?? true) &&
+      Boolean(subjectDid && (activeDid ? clients.activeAppViewProxyAgent : true)),
     queryFn: async ({ pageParam }) => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
       const res = await agent.getFollowers({
         actor: subjectDid!,
-        limit: 50,
+        limit: PROFILE_GRAPH_LIMIT,
         cursor: pageParam,
       });
       primeProfiles(qc, scope, res.data);
       return {
-        items: res.data.followers.map((profile) => profile.did),
+        items: res.data.followers,
         cursor: res.data.cursor,
       };
     },
   });
 }
 
-export function useFollows(subjectDid: string | undefined) {
+export function useFollows(
+  subjectDid: string | undefined,
+  options?: { enabled?: boolean },
+) {
   const clients = useClients();
   const activeDid = useActiveDid();
   const scope = useViewerScope();
   const qc = useQueryClient();
 
   return useInfiniteList({
-    queryKey: subjectDid ? keys.follows(scope, subjectDid) : ['follows', 'disabled'],
-    enabled: Boolean(
-      subjectDid && (activeDid ? clients.activeAppViewProxyAgent : true),
-    ),
+    queryKey: subjectDid
+      ? keys.follows(scope, subjectDid)
+      : ['follows', 'disabled'],
+    enabled:
+      (options?.enabled ?? true) &&
+      Boolean(subjectDid && (activeDid ? clients.activeAppViewProxyAgent : true)),
     queryFn: async ({ pageParam }) => {
       const agent = getReadAgent(clients, feedReadMode(activeDid));
       const res = await agent.getFollows({
         actor: subjectDid!,
-        limit: 50,
+        limit: PROFILE_GRAPH_LIMIT,
         cursor: pageParam,
       });
       primeProfiles(qc, scope, res.data);
       return {
-        items: res.data.follows.map((profile) => profile.did),
+        items: res.data.follows,
         cursor: res.data.cursor,
       };
     },

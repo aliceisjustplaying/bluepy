@@ -22,7 +22,7 @@ import {
 import { useActiveDid, useClients } from '../contexts/SessionProvider';
 import { feedReadMode } from '../data/_internal/dispatch';
 import { getReadAgent } from '../data/clients';
-import { useProfileRoute } from '../data/profiles';
+import { useFollowers, useFollows, useProfileRoute } from '../data/profiles';
 import enhanceContent from '../utils/enhance-content';
 import handleContentLinks from '../utils/handle-content-links';
 import niceDateTime from '../utils/nice-date-time';
@@ -330,62 +330,51 @@ function AccountInfo({
 
   const [headerCornerColors, setHeaderCornerColors] = useState<string[]>([]);
 
-  const followersIterator = useRef<
-    AsyncIterator<AccountInfoShape[]> | undefined
-  >(undefined);
-  async function fetchFollowers(
-    firstLoad?: boolean,
-  ): Promise<AccountIterPage | IteratorResult<AccountInfoShape[]>> {
-    if (!id) return { value: undefined, done: true };
-    if (firstLoad || !followersIterator.current) {
-      let cursor: string | undefined;
-      followersIterator.current = {
-        next: async () => {
-          const agent = getReadAgent(clients, feedReadMode(activeDid));
-          const res = await agent.getFollowers({
-            actor: id,
-            limit: LIMIT,
-            cursor,
-          });
-          cursor = res.data.cursor;
-          return {
-            value: res.data.followers.map(profileToAccountInfo),
-            done: !cursor,
-          };
-        },
-      };
-    }
-    return followersIterator.current.next();
-  }
+  const followersSource = useFollowers(id, { enabled: false });
+  const followingSource = useFollows(id, { enabled: false });
+  const followerCountLoaded = useRef(0);
+  const followingCountLoaded = useRef(0);
 
-  const followingIterator = useRef<
-    AsyncIterator<AccountInfoShape[]> | undefined
-  >(undefined);
-  async function fetchFollowing(
-    firstLoad?: boolean,
-  ): Promise<AccountIterPage | IteratorResult<AccountInfoShape[]>> {
-    if (!id) return { value: undefined, done: true };
-    if (firstLoad || !followingIterator.current) {
-      let cursor: string | undefined;
-      followingIterator.current = {
-        next: async () => {
-          const agent = getReadAgent(clients, feedReadMode(activeDid));
-          const res = await agent.getFollows({
-            actor: id,
-            limit: LIMIT,
-            cursor,
-          });
-          cursor = res.data.cursor;
-          return {
-            value: res.data.follows.map(profileToAccountInfo),
-            done: !cursor,
-          };
-        },
-      };
-    }
-    const results = await followingIterator.current.next();
-    return results;
-  }
+  useEffect(() => {
+    followerCountLoaded.current = 0;
+    followingCountLoaded.current = 0;
+  }, [id]);
+
+  const fetchFollowers = useCallback(
+    async (
+      firstLoad?: boolean,
+    ): Promise<AccountIterPage | IteratorResult<AccountInfoShape[]>> => {
+      if (!id) return { value: undefined, done: true };
+      if (firstLoad) followerCountLoaded.current = 0;
+      const snapshot = firstLoad
+        ? await followersSource.refetchItems()
+        : await followersSource.loadMoreItems();
+      const value = snapshot.items
+        .slice(followerCountLoaded.current)
+        .map(profileToAccountInfo);
+      followerCountLoaded.current = snapshot.items.length;
+      return { value, done: !snapshot.hasMore };
+    },
+    [followersSource, id],
+  );
+
+  const fetchFollowing = useCallback(
+    async (
+      firstLoad?: boolean,
+    ): Promise<AccountIterPage | IteratorResult<AccountInfoShape[]>> => {
+      if (!id) return { value: undefined, done: true };
+      if (firstLoad) followingCountLoaded.current = 0;
+      const snapshot = firstLoad
+        ? await followingSource.refetchItems()
+        : await followingSource.loadMoreItems();
+      const value = snapshot.items
+        .slice(followingCountLoaded.current)
+        .map(profileToAccountInfo);
+      followingCountLoaded.current = snapshot.items.length;
+      return { value, done: !snapshot.hasMore };
+    },
+    [followingSource, id],
+  );
 
   const LinkOrDiv = useCallback(
     ({ to, ...props }: LinkProps) => {
@@ -429,11 +418,18 @@ function AccountInfo({
       return;
     }
     const agent = getReadAgent(clients, feedReadMode(activeDid));
-    const res = await agent.app.bsky.graph.getKnownFollowers({
-      actor: id,
-      limit: LIMIT,
-    });
-    setFamiliarFollowers(res.data.followers.map(profileToAccountInfo));
+    try {
+      const res = await agent.app.bsky.graph.getKnownFollowers({
+        actor: id,
+        limit: LIMIT,
+      });
+      setFamiliarFollowers(res.data.followers.map(profileToAccountInfo));
+    } catch (error) {
+      // Familiar followers are decorative; profile rendering should not fail if
+      // this optional graph lookup is unavailable.
+      console.warn('Failed to load familiar followers', error);
+      setFamiliarFollowers([]);
+    }
   }, [activeDid, clients, id]);
 
   useEffect(() => {

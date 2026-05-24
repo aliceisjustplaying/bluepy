@@ -168,7 +168,7 @@ export default function GenericAccounts({
                     _types: account._types ?? [],
                   });
                 } else {
-                  theAccount._types.push(...(account._types as string[]));
+                  theAccount._types.push(...(account._types ?? []));
                 }
               }
               setAccounts(merged);
@@ -176,15 +176,21 @@ export default function GenericAccounts({
               // setAccounts((prev) => [...prev, ...value]);
               // Merge accounts by id and _types
               setAccounts((prev) => {
-                const newAccounts = prev;
+                const newAccounts = prev.map((account) => ({
+                  ...account,
+                  _types: [...account._types],
+                }));
                 for (const account of value) {
                   const theAccount = newAccounts.find(
                     (a) => a.id === account.id,
                   );
                   if (!theAccount) {
-                    newAccounts.push(account as AccountWithTypes);
+                    newAccounts.push({
+                      ...account,
+                      _types: account._types ?? [],
+                    });
                   } else {
-                    theAccount._types.push(...(account._types as string[]));
+                    theAccount._types.push(...(account._types ?? []));
                   }
                 }
                 return newAccounts;

@@ -52,7 +52,7 @@ export const keys = {
     [...s, 'search', type, query] as const,
   bookmarks: (s: ViewerScope) => [...s, 'bookmarks'] as const,
   follows: (s: ViewerScope, subjectDid: string) =>
-    [...s, 'follows', subjectDid] as const,
+    [...s, 'follows', 'profiles-v2', subjectDid] as const,
   followers: (s: ViewerScope, subjectDid: string) =>
-    [...s, 'followers', subjectDid] as const,
+    [...s, 'followers', 'profiles-v2', subjectDid] as const,
 } as const;

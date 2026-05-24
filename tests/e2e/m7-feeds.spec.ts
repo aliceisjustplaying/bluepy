@@ -163,6 +163,13 @@ test.describe('M7 migrated feeds', () => {
     await expect(page.locator('#generic-accounts-container')).toBeVisible({
       timeout: 60_000,
     });
+    await expect(
+      page
+        .locator(
+          '#generic-accounts-container .accounts-list > li, #generic-accounts-container .ui-state.insignificant',
+        )
+        .first(),
+    ).toBeVisible({ timeout: 60_000 });
 
     await page.locator('#generic-accounts-container .sheet-close').click();
     await expect(page.locator('#generic-accounts-container')).toHaveCount(
@@ -185,6 +192,9 @@ test.describe('M7 migrated feeds', () => {
     await expect(page.locator('#generic-accounts-container')).toBeVisible({
       timeout: 60_000,
     });
+    await expect(
+      page.locator('#generic-accounts-container .accounts-list > li').first(),
+    ).toBeVisible({ timeout: 60_000 });
   });
 
   test('hashtag feed loads via searchPosts', async ({ page }) => {

@@ -15,6 +15,10 @@ interface RelationshipsResource {
   };
 }
 
+// The ATProto relationship adapter hydrates profile rows through
+// app.bsky.actor.getProfiles, which caps each request at 25 actors.
+const ATPROTO_GET_PROFILES_LIMIT = 25;
+
 export async function fetchRelationships(
   accounts: readonly AccountLike[] | null | undefined,
   relationshipsMap: Record<string, mastodon.v1.Relationship> = {},
@@ -43,9 +47,21 @@ export async function fetchRelationships(
       masto,
       'accounts',
     );
-    const relationships = await accountsResource.relationships.fetch({
-      id: uniqueAccountIds,
-    });
+    const relationshipPages = await Promise.all(
+      Array.from(
+        { length: Math.ceil(uniqueAccountIds.length / ATPROTO_GET_PROFILES_LIMIT) },
+        (_, pageIndex) => {
+          const offset = pageIndex * ATPROTO_GET_PROFILES_LIMIT;
+          return accountsResource.relationships.fetch({
+            id: uniqueAccountIds.slice(
+              offset,
+              offset + ATPROTO_GET_PROFILES_LIMIT,
+            ),
+          });
+        },
+      ),
+    );
+    const relationships = relationshipPages.flat();
     const newRelationshipsMap = relationships.reduce<
       Record<string, mastodon.v1.Relationship>
     >((acc, r) => {
